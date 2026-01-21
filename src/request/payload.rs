@@ -198,6 +198,34 @@ pub struct APS<'a> {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url_args: Option<&'a [&'a str]>,
+
+    /// Live Activity: Timestamp for the Live Activity update.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timestamp: Option<u64>,
+
+    /// Live Activity: Event type ("start" to begin a Live Activity).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<&'a str>,
+
+    /// Live Activity: Content state with dynamic data for the Live Activity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_state: Option<Value>,
+
+    /// Live Activity: Type of attributes for the Live Activity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attributes_type: Option<&'a str>,
+
+    /// Live Activity: Attributes data for the Live Activity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attributes: Option<Value>,
+
+    /// Live Activity: Input push channel ID for iOS 18+ channel-based updates.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input_push_channel: Option<&'a str>,
+
+    /// Live Activity: Set to 1 to request a new push token for iOS 18+ token-based updates.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input_push_token: Option<u8>,
 }
 
 /// Different notification content types.
@@ -274,5 +302,70 @@ mod tests {
 
         let json = payload.to_json_string().unwrap();
         assert!(json.contains("\"interruption-level\":\"time-sensitive\""));
+    }
+
+    #[test]
+    fn test_live_activity_payload_serialization() {
+        use serde_json::json;
+
+        let content_state = json!({
+            "currentHealthLevel": 100,
+            "eventDescription": "Adventure has begun!"
+        });
+
+        let attributes = json!({
+            "currentHealthLevel": 100,
+            "eventDescription": "Adventure has begun!"
+        });
+
+        let builder = DefaultNotificationBuilder::new()
+            .set_timestamp(1234)
+            .set_event("start")
+            .set_content_state(&content_state)
+            .set_attributes_type("AdventureAttributes")
+            .set_attributes(&attributes)
+            .set_title("Adventure Alert")
+            .set_body("Your adventure has started!");
+
+        let payload = builder.build("test-token", Default::default());
+        let json_str = payload.to_json_string().unwrap();
+
+        // Verify all Live Activity fields are correctly serialized
+        assert!(json_str.contains("\"timestamp\":1234"));
+        assert!(json_str.contains("\"event\":\"start\""));
+        assert!(
+            json_str.contains(
+                "\"content-state\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"
+            )
+        );
+        assert!(json_str.contains("\"attributes-type\":\"AdventureAttributes\""));
+        assert!(
+            json_str
+                .contains("\"attributes\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}")
+        );
+
+        // Test iOS 18 channel-based Live Activity
+        let builder = DefaultNotificationBuilder::new()
+            .set_event("start")
+            .set_input_push_channel("dHN0LXNyY2gtY2hubA==")
+            .set_attributes_type("AdventureAttributes")
+            .set_attributes(&attributes);
+
+        let payload = builder.build("test-token", Default::default());
+        let json_str = payload.to_json_string().unwrap();
+
+        assert!(json_str.contains("\"input-push-channel\":\"dHN0LXNyY2gtY2hubA==\""));
+
+        // Test iOS 18 token-based Live Activity
+        let builder = DefaultNotificationBuilder::new()
+            .set_event("start")
+            .set_input_push_token()
+            .set_attributes_type("AdventureAttributes")
+            .set_attributes(&attributes);
+
+        let payload = builder.build("test-token", Default::default());
+        let json_str = payload.to_json_string().unwrap();
+
+        assert!(json_str.contains("\"input-push-token\":1"));
     }
 }

@@ -121,6 +121,13 @@ pub struct DefaultNotificationBuilder<'a> {
     content_available: Option<u8>,
     interruption_level: Option<InterruptionLevel>,
     has_edited_alert: bool,
+    timestamp: Option<u64>,
+    event: Option<&'a str>,
+    content_state: Option<serde_json::Value>,
+    attributes_type: Option<&'a str>,
+    attributes: Option<serde_json::Value>,
+    input_push_channel: Option<&'a str>,
+    input_push_token: Option<u8>,
 }
 
 impl<'a> DefaultNotificationBuilder<'a> {
@@ -166,6 +173,13 @@ impl<'a> DefaultNotificationBuilder<'a> {
             content_available: None,
             interruption_level: None,
             has_edited_alert: false,
+            timestamp: None,
+            event: None,
+            content_state: None,
+            attributes_type: None,
+            attributes: None,
+            input_push_channel: None,
+            input_push_token: None,
         }
     }
 
@@ -659,6 +673,157 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self.interruption_level = Some(level);
         self
     }
+
+    /// Set the timestamp for a Live Activity update
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_timestamp(1234)
+    ///     .build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"mutable-content\":0,\"timestamp\":1234}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_timestamp(mut self, timestamp: u64) -> Self {
+        self.timestamp = Some(timestamp);
+        self
+    }
+
+    /// Set the event for a Live Activity. Use "start" to begin a Live Activity.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_event("start")
+    ///     .build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"mutable-content\":0,\"event\":\"start\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_event(mut self, event: &'a str) -> Self {
+        self.event = Some(event);
+        self
+    }
+
+    /// Set the content state for a Live Activity with dynamic data
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # use serde_json::json;
+    /// # fn main() {
+    /// let content_state = json!({
+    ///     "currentHealthLevel": 100,
+    ///     "eventDescription": "Adventure has begun!"
+    /// });
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_content_state(&content_state)
+    ///     .build("token", Default::default());
+    ///
+    /// assert!(payload.to_json_string().unwrap().contains("\"content-state\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"));
+    /// # }
+    /// ```
+    pub fn set_content_state(mut self, content_state: &serde_json::Value) -> Self {
+        self.content_state = Some(content_state.clone());
+        self
+    }
+
+    /// Set the attributes type for a Live Activity
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_attributes_type("AdventureAttributes")
+    ///     .build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"mutable-content\":0,\"attributes-type\":\"AdventureAttributes\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_attributes_type(mut self, attributes_type: &'a str) -> Self {
+        self.attributes_type = Some(attributes_type);
+        self
+    }
+
+    /// Set the attributes for a Live Activity with data defining the Live Activity
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # use serde_json::json;
+    /// # fn main() {
+    /// let attributes = json!({
+    ///     "currentHealthLevel": 100,
+    ///     "eventDescription": "Adventure has begun!"
+    /// });
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_attributes(&attributes)
+    ///     .build("token", Default::default());
+    ///
+    /// assert!(payload.to_json_string().unwrap().contains("\"attributes\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"));
+    /// # }
+    /// ```
+    pub fn set_attributes(mut self, attributes: &serde_json::Value) -> Self {
+        self.attributes = Some(attributes.clone());
+        self
+    }
+
+    /// Set the input push channel ID for iOS 18+ channel-based Live Activity updates
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_input_push_channel("dHN0LXNyY2gtY2hubA==")
+    ///     .build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"mutable-content\":0,\"input-push-channel\":\"dHN0LXNyY2gtY2hubA==\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_input_push_channel(mut self, channel_id: &'a str) -> Self {
+        self.input_push_channel = Some(channel_id);
+        self
+    }
+
+    /// Enable input push token request for iOS 18+ token-based Live Activity updates
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_input_push_token()
+    ///     .build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"mutable-content\":0,\"input-push-token\":1}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_input_push_token(mut self) -> Self {
+        self.input_push_token = Some(1);
+        self
+    }
 }
 
 impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
@@ -681,6 +846,13 @@ impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
                 mutable_content: Some(self.mutable_content),
                 interruption_level: self.interruption_level,
                 url_args: None,
+                timestamp: self.timestamp,
+                event: self.event,
+                content_state: self.content_state,
+                attributes_type: self.attributes_type,
+                attributes: self.attributes,
+                input_push_channel: self.input_push_channel,
+                input_push_token: self.input_push_token,
             },
             device_token,
             options,
