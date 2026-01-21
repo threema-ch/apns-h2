@@ -23,3 +23,4 @@ Possible log types:
 - [changed] Update `erased-serde`, `thiserror`, `base64`, `hyper-rustls` and `rustls` deps
 - [added] Keep http connections open
 - [added] Support thread-id
+- [added] Support interruption-level

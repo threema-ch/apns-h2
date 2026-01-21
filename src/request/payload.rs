@@ -191,6 +191,11 @@ pub struct APS<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mutable_content: Option<u8>,
 
+    /// Interruption level for the notification. Controls how the notification
+    /// is presented to the user and what system settings it can bypass.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interruption_level: Option<InterruptionLevel>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url_args: Option<&'a [&'a str]>,
 }
@@ -215,4 +220,59 @@ pub enum APSSound<'a> {
     Critical(DefaultSound<'a>),
     /// Name for a notification sound
     Sound(&'a str),
+}
+
+/// Interruption level for notification delivery and presentation.
+#[derive(Serialize, Debug, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub enum InterruptionLevel {
+    /// The system presents the notification immediately, lights up the screen, and can play a sound.
+    Active,
+    /// The system presents the notification immediately, lights up the screen, and bypasses the mute switch to play a sound.
+    Critical,
+    /// The system adds the notification to the notification list without lighting up the screen or playing a sound.
+    Passive,
+    /// The system presents the notification immediately, lights up the screen, can play a sound, and breaks through system notification controls.
+    TimeSensitive,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+
+    #[test]
+    fn test_interruption_level_serialization() {
+        let builder = DefaultNotificationBuilder::new()
+            .set_title("Test Title")
+            .set_active_interruption_level();
+        let payload = builder.build("test-token", Default::default());
+
+        let json = payload.to_json_string().unwrap();
+        assert!(json.contains("\"interruption-level\":\"active\""));
+
+        let builder = DefaultNotificationBuilder::new()
+            .set_title("Test Title")
+            .set_critical_interruption_level();
+        let payload = builder.build("test-token", Default::default());
+
+        let json = payload.to_json_string().unwrap();
+        assert!(json.contains("\"interruption-level\":\"critical\""));
+
+        let builder = DefaultNotificationBuilder::new()
+            .set_title("Test Title")
+            .set_passive_interruption_level();
+        let payload = builder.build("test-token", Default::default());
+
+        let json = payload.to_json_string().unwrap();
+        assert!(json.contains("\"interruption-level\":\"passive\""));
+
+        let builder = DefaultNotificationBuilder::new()
+            .set_title("Test Title")
+            .set_time_sensitive_interruption_level();
+        let payload = builder.build("test-token", Default::default());
+
+        let json = payload.to_json_string().unwrap();
+        assert!(json.contains("\"interruption-level\":\"time-sensitive\""));
+    }
 }

@@ -131,6 +131,8 @@ pub use crate::request::notification::{
     WebNotificationBuilder, WebPushAlert,
 };
 
+pub use crate::request::payload::InterruptionLevel;
+
 pub use crate::response::{ErrorBody, ErrorReason, Response};
 
 pub use crate::client::{Client, ClientConfig, Endpoint};
