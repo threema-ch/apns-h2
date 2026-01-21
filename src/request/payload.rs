@@ -196,6 +196,10 @@ pub struct APS<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interruption_level: Option<InterruptionLevel>,
 
+    /// The date when the system should automatically remove the notification.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dismissal_date: Option<u64>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url_args: Option<&'a [&'a str]>,
 
@@ -302,6 +306,17 @@ mod tests {
 
         let json = payload.to_json_string().unwrap();
         assert!(json.contains("\"interruption-level\":\"time-sensitive\""));
+    }
+
+    #[test]
+    fn test_dismissal_date_serialization() {
+        let builder = DefaultNotificationBuilder::new()
+            .set_title("Test Title")
+            .set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+        let payload = builder.build("test-token", Default::default());
+
+        let json = payload.to_json_string().unwrap();
+        assert!(json.contains("\"dismissal-date\":1672531200"));
     }
 
     #[test]
