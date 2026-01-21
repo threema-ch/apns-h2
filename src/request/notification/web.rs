@@ -28,6 +28,7 @@ pub struct WebNotificationBuilder<'a> {
     alert: WebPushAlert<'a>,
     sound: Option<&'a str>,
     url_args: &'a [&'a str],
+    interruption_level: Option<crate::request::payload::InterruptionLevel>,
 }
 
 impl<'a> WebNotificationBuilder<'a> {
@@ -51,6 +52,7 @@ impl<'a> WebNotificationBuilder<'a> {
             alert,
             sound: None,
             url_args,
+            interruption_level: None,
         }
     }
 
@@ -74,6 +76,116 @@ impl<'a> WebNotificationBuilder<'a> {
         self.sound = Some(sound);
         self
     }
+
+    /// Set the interruption level to active. The system presents the notification
+    /// immediately, lights up the screen, and can play a sound.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{WebNotificationBuilder, NotificationBuilder, WebPushAlert};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
+    /// builder.set_active_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"Hello\",\"body\":\"World\",\"action\":\"View\"},\"interruption-level\":\"active\",\"url-args\":[\"arg1\"]}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_active_interruption_level(&mut self) -> &mut Self {
+        self.interruption_level = Some(crate::request::payload::InterruptionLevel::Active);
+        self
+    }
+
+    /// Set the interruption level to critical. The system presents the notification
+    /// immediately, lights up the screen, and bypasses the mute switch to play a sound.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{WebNotificationBuilder, NotificationBuilder, WebPushAlert};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
+    /// builder.set_critical_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"Hello\",\"body\":\"World\",\"action\":\"View\"},\"interruption-level\":\"critical\",\"url-args\":[\"arg1\"]}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_critical_interruption_level(&mut self) -> &mut Self {
+        self.interruption_level = Some(crate::request::payload::InterruptionLevel::Critical);
+        self
+    }
+
+    /// Set the interruption level to passive. The system adds the notification to
+    /// the notification list without lighting up the screen or playing a sound.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{WebNotificationBuilder, NotificationBuilder, WebPushAlert};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
+    /// builder.set_passive_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"Hello\",\"body\":\"World\",\"action\":\"View\"},\"interruption-level\":\"passive\",\"url-args\":[\"arg1\"]}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_passive_interruption_level(&mut self) -> &mut Self {
+        self.interruption_level = Some(crate::request::payload::InterruptionLevel::Passive);
+        self
+    }
+
+    /// Set the interruption level to time sensitive. The system presents the notification
+    /// immediately, lights up the screen, can play a sound, and breaks through system
+    /// notification controls.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{WebNotificationBuilder, NotificationBuilder, WebPushAlert};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
+    /// builder.set_time_sensitive_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"Hello\",\"body\":\"World\",\"action\":\"View\"},\"interruption-level\":\"time-sensitive\",\"url-args\":[\"arg1\"]}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_time_sensitive_interruption_level(&mut self) -> &mut Self {
+        self.interruption_level = Some(crate::request::payload::InterruptionLevel::TimeSensitive);
+        self
+    }
+
+    /// Set the interruption level directly. Controls how the notification is presented to the user.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{WebNotificationBuilder, NotificationBuilder, WebPushAlert};
+    /// # use apns_h2::request::payload::{PayloadLike, InterruptionLevel};
+    /// # fn main() {
+    /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
+    /// builder.set_interruption_level(InterruptionLevel::Active);
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"Hello\",\"body\":\"World\",\"action\":\"View\"},\"interruption-level\":\"active\",\"url-args\":[\"arg1\"]}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_interruption_level(&mut self, level: crate::request::payload::InterruptionLevel) -> &mut Self {
+        self.interruption_level = Some(level);
+        self
+    }
 }
 
 impl<'a> NotificationBuilder<'a> for WebNotificationBuilder<'a> {
@@ -87,6 +199,7 @@ impl<'a> NotificationBuilder<'a> for WebNotificationBuilder<'a> {
                 content_available: None,
                 category: None,
                 mutable_content: None,
+                interruption_level: self.interruption_level,
                 url_args: Some(self.url_args),
             },
             device_token,

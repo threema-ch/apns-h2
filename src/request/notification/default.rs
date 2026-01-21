@@ -1,3 +1,4 @@
+use crate::InterruptionLevel;
 use crate::request::notification::{NotificationBuilder, NotificationOptions};
 use crate::request::payload::{APS, APSAlert, APSSound, Payload};
 
@@ -118,6 +119,7 @@ pub struct DefaultNotificationBuilder<'a> {
     category: Option<&'a str>,
     mutable_content: u8,
     content_available: Option<u8>,
+    interruption_level: Option<InterruptionLevel>,
     has_edited_alert: bool,
 }
 
@@ -162,13 +164,14 @@ impl<'a> DefaultNotificationBuilder<'a> {
             category: None,
             mutable_content: 0,
             content_available: None,
+            interruption_level: None,
             has_edited_alert: false,
         }
     }
 
     /// Set the title of the notification.
     /// Apple Watch displays this string in the short look notification interface.
-    /// Specify a string that’s quickly understood by the user.
+    /// Specify a string that's quickly understood by the user.
     ///
     /// ```rust
     /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
@@ -541,6 +544,121 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self.content_available = Some(1);
         self
     }
+
+    /// Set the interruption level to active. The system presents the notification
+    /// immediately, lights up the screen, and can play a sound.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .set_title("a title")
+    ///     .set_active_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\"},\"mutable-content\":0,\"interruption-level\":\"active\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_active_interruption_level(mut self) -> Self {
+        self.interruption_level = Some(InterruptionLevel::Active);
+        self
+    }
+
+    /// Set the interruption level to critical. The system presents the notification
+    /// immediately, lights up the screen, and bypasses the mute switch to play a sound.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .set_title("a title")
+    ///     .set_critical_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\"},\"mutable-content\":0,\"interruption-level\":\"critical\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_critical_interruption_level(mut self) -> Self {
+        self.interruption_level = Some(InterruptionLevel::Critical);
+        self
+    }
+
+    /// Set the interruption level to passive. The system adds the notification to
+    /// the notification list without lighting up the screen or playing a sound.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .set_title("a title")
+    ///     .set_passive_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\"},\"mutable-content\":0,\"interruption-level\":\"passive\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_passive_interruption_level(mut self) -> Self {
+        self.interruption_level = Some(InterruptionLevel::Passive);
+        self
+    }
+
+    /// Set the interruption level to time sensitive. The system presents the notification
+    /// immediately, lights up the screen, can play a sound, and breaks through system
+    /// notification controls.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .set_title("a title")
+    ///     .set_time_sensitive_interruption_level();
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\"},\"mutable-content\":0,\"interruption-level\":\"time-sensitive\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_time_sensitive_interruption_level(mut self) -> Self {
+        self.interruption_level = Some(InterruptionLevel::TimeSensitive);
+        self
+    }
+
+    /// Set the interruption level directly. Controls how the notification is presented to the user.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::{PayloadLike, InterruptionLevel};
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .set_title("a title")
+    ///     .set_interruption_level(InterruptionLevel::Active);
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\"},\"mutable-content\":0,\"interruption-level\":\"active\"}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_interruption_level(mut self, level: InterruptionLevel) -> Self {
+        self.interruption_level = Some(level);
+        self
+    }
 }
 
 impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
@@ -561,6 +679,7 @@ impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
                 content_available: self.content_available,
                 category: self.category,
                 mutable_content: Some(self.mutable_content),
+                interruption_level: self.interruption_level,
                 url_args: None,
             },
             device_token,
