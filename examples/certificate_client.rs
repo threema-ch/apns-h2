@@ -32,29 +32,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     }
 
     // Connecting to APNs using a client certificate
-    let new_client = || -> Result<Client, Box<dyn std::error::Error + Sync + Send>> {
-        #[cfg(all(not(feature = "ring"), feature = "openssl"))]
-        {
-            // Which service to call, test or production?
-            let endpoint = if sandbox {
-                apns_h2::Endpoint::Sandbox
-            } else {
-                apns_h2::Endpoint::Production
-            };
+    let client = {
+        // Which service to call, test or production?
+        let endpoint = if sandbox {
+            apns_h2::Endpoint::Sandbox
+        } else {
+            apns_h2::Endpoint::Production
+        };
 
-            let mut certificate = std::fs::File::open(certificate_file)?;
+        let mut certificate = std::fs::File::open(certificate_file)?;
 
-            // Create config with the given endpoint and default timeouts
-            let client_config = apns_h2::ClientConfig::new(endpoint);
+        // Create config with the given endpoint and default timeouts
+        let client_config = apns_h2::ClientConfig::new(endpoint);
 
-            Ok(Client::certificate(&mut certificate, &password, client_config)?)
-        }
-        #[cfg(feature = "ring")]
-        {
-            Err("ring does not support loading of certificates".into())
-        }
+        Client::certificate(&mut certificate, &password, client_config)?
     };
-    let client = new_client()?;
 
     let options = NotificationOptions {
         apns_topic: topic.as_deref(),

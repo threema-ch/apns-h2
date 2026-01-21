@@ -19,3 +19,4 @@ Possible log types:
 - [changed] Rename crate to `apns-h2`
 - [changed] Make ring the default crypto provider
 - [changed] Clean up features of dependencies
+- [added] Add pure Rust PKCS#12 parsing with p12-keystore

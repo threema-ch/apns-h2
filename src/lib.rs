@@ -120,6 +120,8 @@ extern crate serde_json;
 
 pub mod client;
 pub mod error;
+#[cfg(feature = "ring")]
+mod pkcs12;
 pub mod request;
 pub mod response;
 mod signer;
