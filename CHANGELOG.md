@@ -13,4 +13,4 @@ Possible log types:
 
 ### Unreleased
 
-- ...
+- [changed] Remove lockfile
