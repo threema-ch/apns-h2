@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // Connecting to APNs using a client certificate
     let new_client = || -> Result<Client, Box<dyn std::error::Error + Sync + Send>> {
-        #[cfg(feature = "openssl")]
+        #[cfg(all(not(feature = "ring"), feature = "openssl"))]
         {
             // Which service to call, test or production?
             let endpoint = if sandbox {
@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
             Ok(Client::certificate(&mut certificate, &password, client_config)?)
         }
-        #[cfg(all(not(feature = "openssl"), feature = "ring"))]
+        #[cfg(feature = "ring")]
         {
             Err("ring does not support loading of certificates".into())
         }

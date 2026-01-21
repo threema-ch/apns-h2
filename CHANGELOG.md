@@ -17,3 +17,4 @@ Possible log types:
 - [changed] Migrate to edition 2024 and set msrv to 1.85
 - [changed] Migrate from `rustls-pemfile` to `rustls-pki-types`
 - [changed] Rename crate to `apns-h2`
+- [changed] Make ring the default crypto provider

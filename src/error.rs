@@ -53,7 +53,7 @@ pub enum Error {
     RequestTimeout(u64),
 
     /// Unexpected private key (only EC keys are supported).
-    #[cfg(all(not(feature = "openssl"), feature = "ring"))]
+    #[cfg(feature = "ring")]
     #[error("Unexpected private key: {0}")]
     UnexpectedKey(#[from] ring::error::KeyRejected),
 
@@ -61,7 +61,7 @@ pub enum Error {
     InvalidCertificate,
 }
 
-#[cfg(feature = "openssl")]
+#[cfg(all(not(feature = "ring"), feature = "openssl"))]
 impl From<openssl::error::ErrorStack> for Error {
     fn from(e: openssl::error::ErrorStack) -> Self {
         Self::SignerError(SignerError::OpenSSL(e))
