@@ -12,12 +12,13 @@ use http_body_util::combinators::BoxBody;
 use http_body_util::{BodyExt, Full};
 use hyper::body::Bytes;
 use hyper::{self, StatusCode};
-use hyper_rustls::{ConfigBuilderExt, HttpsConnector, HttpsConnectorBuilder};
+use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use hyper_util::client::legacy::Client as HttpClient;
 use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::rt::{TokioExecutor, TokioTimer};
 use std::convert::Infallible;
 use std::io::Read;
+use std::sync::Arc;
 use std::time::Duration;
 use std::{fmt, io};
 
@@ -96,21 +97,11 @@ impl ClientConfig {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct ClientBuilder {
     config: ClientConfig,
     signer: Option<Signer>,
     connector: Option<HyperConnector>,
-}
-
-impl Default for ClientBuilder {
-    fn default() -> Self {
-        Self {
-            config: Default::default(),
-            signer: None,
-            connector: Some(default_connector()),
-        }
-    }
 }
 
 impl ClientBuilder {
@@ -129,7 +120,7 @@ impl ClientBuilder {
         self
     }
 
-    fn build(self) -> Client {
+    fn build(self) -> Result<Client, Error> {
         let ClientBuilder {
             config:
                 ClientConfig {
@@ -142,18 +133,25 @@ impl ClientBuilder {
             signer,
             connector,
         } = self;
+
+        let connector = if let Some(connector) = connector {
+            connector
+        } else {
+            default_connector()?
+        };
+
         let http_client = HttpClient::builder(TokioExecutor::new())
             .pool_idle_timeout(pool_idle_timeout_secs.map(Duration::from_secs))
             .http2_only(true)
             .http2_keep_alive_interval(http2_keep_alive_interval_secs.map(Duration::from_secs))
             .http2_keep_alive_while_idle(http2_keep_alive_while_idle)
             .timer(TokioTimer::new())
-            .build(connector.unwrap_or_else(default_connector));
+            .build(connector);
 
-        Client {
+        Ok(Client {
             http_client,
             options: ConnectionOptions::new(endpoint, signer, request_timeout_secs),
-        }
+        })
     }
 }
 
@@ -213,7 +211,7 @@ impl Client {
         };
 
         let connector = create_connector(certificate_bytes.as_ref(), password)?;
-        Ok(Self::builder().connector(connector).config(config).build())
+        Self::builder().connector(connector).config(config).build()
     }
 
     /// Create a connection to APNs using the raw PEM-formatted certificate and
@@ -222,7 +220,7 @@ impl Client {
     pub fn certificate_parts(cert_pem: &[u8], key_pem: &[u8], config: ClientConfig) -> Result<Client, Error> {
         let connector = client_cert_connector(cert_pem, key_pem)?;
 
-        Ok(Self::builder().config(config).connector(connector).build())
+        Self::builder().config(config).connector(connector).build()
     }
 
     /// Create a connection to APNs using system certificates, signing every
@@ -238,7 +236,7 @@ impl Client {
         let signature_ttl = Duration::from_secs(60 * 55);
         let signer = Signer::new(pkcs8_pem, key_id, team_id, signature_ttl)?;
 
-        Ok(Self::builder().config(config).signer(signer).build())
+        Self::builder().config(config).signer(signer).build()
     }
 
     /// Send a notification payload.
@@ -334,12 +332,46 @@ impl Client {
     }
 }
 
-fn default_connector() -> HyperConnector {
-    HttpsConnectorBuilder::new()
-        .with_webpki_roots()
+#[cfg(feature = "ring")]
+fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
+    Arc::new(rustls::crypto::ring::default_provider())
+}
+
+#[cfg(all(not(feature = "ring"), feature = "openssl"))]
+fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
+    Arc::new(rustls_openssl::default_provider())
+}
+
+#[cfg(all(not(feature = "ring"), not(feature = "openssl")))]
+fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
+    panic!("No provider set");
+}
+
+/// Create a [`rustls::ConfigBuilder`] with the provider preset and platform
+/// verifier enabled
+fn client_config_builder() -> Result<rustls::ConfigBuilder<rustls::ClientConfig, rustls::client::WantsClientCert>, Error>
+{
+    use hyper_rustls::ConfigBuilderExt as _;
+    // Allow setting a runtime default crypto provider, otherwise use the
+    // default.
+    let provider = rustls::crypto::CryptoProvider::get_default()
+        .cloned()
+        .unwrap_or_else(default_crypto_provider);
+
+    Ok(rustls::client::ClientConfig::builder_with_provider(provider)
+        .with_safe_default_protocol_versions()?
+        .try_with_platform_verifier()?)
+}
+
+/// Create a connector with safe defaults
+fn default_connector() -> Result<HyperConnector, Error> {
+    let config = client_config_builder()?.with_no_client_auth();
+
+    Ok(HttpsConnectorBuilder::new()
+        .with_tls_config(config)
         .https_only()
         .enable_http2()
-        .build()
+        .build())
 }
 
 fn client_cert_connector(cert_pem: &[u8], key_pem: &[u8]) -> Result<HyperConnector, Error> {
@@ -353,9 +385,7 @@ fn client_cert_connector(cert_pem: &[u8], key_pem: &[u8]) -> Result<HyperConnect
         .collect::<Result<Vec<_>, _>>()
         .map_err(cert_error_fn)?;
 
-    let config = rustls::client::ClientConfig::builder()
-        .with_webpki_roots()
-        .with_client_auth_cert(cert_chain, key.into())?;
+    let config = client_config_builder()?.with_client_auth_cert(cert_chain, key.into())?;
 
     Ok(HttpsConnectorBuilder::new()
         .with_tls_config(config)
@@ -385,7 +415,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_production_request_uri() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let uri = format!("{}", request.uri());
 
@@ -401,7 +431,8 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
                 endpoint: Endpoint::Sandbox,
                 ..Default::default()
             })
-            .build();
+            .build()
+            .unwrap();
         let request = client.build_request(payload).unwrap();
         let uri = format!("{}", request.uri());
 
@@ -412,7 +443,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_request_method() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
 
         assert_eq!(&Method::POST, request.method());
@@ -422,7 +453,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_request_invalid() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("\r\n", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload);
 
         assert!(matches!(request, Err(Error::BuildRequestError(_))));
@@ -432,7 +463,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_request_content_type() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
 
         assert_eq!("application/json", request.headers().get(CONTENT_TYPE).unwrap());
@@ -442,7 +473,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_request_content_length() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload.clone()).unwrap();
         let payload_json = payload.to_json_string().unwrap();
         let content_length = request.headers().get(CONTENT_LENGTH).unwrap().to_str().unwrap();
@@ -454,7 +485,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_request_authorization_with_no_signer() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
 
         assert_eq!(None, request.headers().get(AUTHORIZATION));
@@ -472,7 +503,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
 
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().signer(signer).build();
+        let client = Client::builder().signer(signer).build().unwrap();
         let request = client.build_request(payload).unwrap();
 
         assert_ne!(None, request.headers().get(AUTHORIZATION));
@@ -486,7 +517,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             ..Default::default()
         };
         let payload = builder.build("a_test_id", options);
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_push_type = request.headers().get("apns-push-type").unwrap();
 
@@ -497,7 +528,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     fn test_request_with_default_priority() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_priority = request.headers().get("apns-priority");
 
@@ -516,7 +547,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             },
         );
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_priority = request.headers().get("apns-priority").unwrap();
 
@@ -535,7 +566,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             },
         );
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_priority = request.headers().get("apns-priority").unwrap();
 
@@ -548,7 +579,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
 
         let payload = builder.build("a_test_id", Default::default());
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_id = request.headers().get("apns-id");
 
@@ -567,7 +598,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             },
         );
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_id = request.headers().get("apns-id").unwrap();
 
@@ -580,7 +611,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
 
         let payload = builder.build("a_test_id", Default::default());
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_expiration = request.headers().get("apns-expiration");
 
@@ -599,7 +630,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             },
         );
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_expiration = request.headers().get("apns-expiration").unwrap();
 
@@ -612,7 +643,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
 
         let payload = builder.build("a_test_id", Default::default());
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_collapse_id = request.headers().get("apns-collapse-id");
 
@@ -631,7 +662,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             },
         );
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_collapse_id = request.headers().get("apns-collapse-id").unwrap();
 
@@ -644,7 +675,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
 
         let payload = builder.build("a_test_id", Default::default());
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_topic = request.headers().get("apns-topic");
 
@@ -663,7 +694,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
             },
         );
 
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload).unwrap();
         let apns_topic = request.headers().get("apns-topic").unwrap();
 
@@ -674,7 +705,7 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
     async fn test_request_body() {
         let builder = DefaultNotificationBuilder::new();
         let payload = builder.build("a_test_id", Default::default());
-        let client = Client::builder().build();
+        let client = Client::builder().build().unwrap();
         let request = client.build_request(payload.clone()).unwrap();
 
         let body = request.into_body().collect().await.unwrap().to_bytes();

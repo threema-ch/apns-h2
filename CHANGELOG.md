@@ -27,3 +27,4 @@ Possible log types:
 - [added] Support Live activity
 - [added] Support Dismissal date
 - [added] Add all current APNs errors
+- [changed] Make `hyper-rustls` use `rustls-platform-verifier`
