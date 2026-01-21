@@ -24,3 +24,4 @@ Possible log types:
 - [added] Keep http connections open
 - [added] Support thread-id
 - [added] Support interruption-level
+- [added] Support Live activity
