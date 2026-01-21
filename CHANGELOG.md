@@ -15,3 +15,4 @@ Possible log types:
 
 - [changed] Remove lockfile
 - [changed] Fix msrv (set it to 1.82)
+- [changed] Migrate from `rustls-pemfile` to `rustls-pki-types`
