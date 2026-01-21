@@ -18,3 +18,4 @@ Possible log types:
 - [changed] Migrate from `rustls-pemfile` to `rustls-pki-types`
 - [changed] Rename crate to `apns-h2`
 - [changed] Make ring the default crypto provider
+- [changed] Clean up features of dependencies
