@@ -309,16 +309,16 @@ fn default_connector() -> HyperConnector {
         .build()
 }
 
-fn client_cert_connector(mut cert_pem: &[u8], mut key_pem: &[u8]) -> Result<HyperConnector, Error> {
-    let private_key_error = || io::Error::new(io::ErrorKind::InvalidData, "private key");
+fn client_cert_connector(cert_pem: &[u8], key_pem: &[u8]) -> Result<HyperConnector, Error> {
+    use rustls_pki_types::{pem::PemObject, CertificateDer, PrivatePkcs8KeyDer};
 
-    let key = rustls_pemfile::pkcs8_private_keys(&mut key_pem)
-        .next()
-        .ok_or_else(private_key_error)?
-        .map_err(|_| private_key_error())?;
+    let cert_error_fn = |e: rustls_pki_types::pem::Error| io::Error::new(io::ErrorKind::InvalidData, e);
 
-    let cert_chain: Result<Vec<_>, _> = rustls_pemfile::certs(&mut cert_pem).collect();
-    let cert_chain = cert_chain.map_err(|_| private_key_error())?;
+    let key = PrivatePkcs8KeyDer::from_pem_slice(key_pem).map_err(cert_error_fn)?;
+
+    let cert_chain = CertificateDer::pem_slice_iter(cert_pem)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(cert_error_fn)?;
 
     let config = rustls::client::ClientConfig::builder()
         .with_webpki_roots()
