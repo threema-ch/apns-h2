@@ -15,7 +15,7 @@ use hyper::{self, StatusCode};
 use hyper_rustls::{ConfigBuilderExt, HttpsConnector, HttpsConnectorBuilder};
 use hyper_util::client::legacy::Client as HttpClient;
 use hyper_util::client::legacy::connect::HttpConnector;
-use hyper_util::rt::TokioExecutor;
+use hyper_util::rt::{TokioExecutor, TokioTimer};
 use std::convert::Infallible;
 use std::io::Read;
 use std::time::Duration;
@@ -147,6 +147,7 @@ impl ClientBuilder {
             .http2_only(true)
             .http2_keep_alive_interval(http2_keep_alive_interval_secs.map(Duration::from_secs))
             .http2_keep_alive_while_idle(http2_keep_alive_while_idle)
+            .timer(TokioTimer::new())
             .build(connector.unwrap_or_else(default_connector));
 
         Client {
