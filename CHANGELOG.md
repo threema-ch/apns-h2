@@ -22,3 +22,4 @@ Possible log types:
 - [added] Add pure Rust PKCS#12 parsing with p12-keystore
 - [changed] Update `erased-serde`, `thiserror`, `base64`, `hyper-rustls` and `rustls` deps
 - [added] Keep http connections open
+- [added] Support thread-id
