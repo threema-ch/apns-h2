@@ -21,3 +21,4 @@ Possible log types:
 - [changed] Clean up features of dependencies
 - [added] Add pure Rust PKCS#12 parsing with p12-keystore
 - [changed] Update `erased-serde`, `thiserror`, `base64`, `hyper-rustls` and `rustls` deps
+- [added] Keep http connections open
