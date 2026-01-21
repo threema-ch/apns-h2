@@ -28,3 +28,4 @@ Possible log types:
 - [added] Support Dismissal date
 - [added] Add all current APNs errors
 - [changed] Make `hyper-rustls` use `rustls-platform-verifier`
+- [changed] Change APNs development endpoint to api.sandbox.push.apple.com
