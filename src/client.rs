@@ -176,7 +176,7 @@ impl Client {
     /// account](https://developer.apple.com/account/).
     ///
     /// Only works with the `openssl` feature.
-    #[cfg(feature = "openssl")]
+    #[cfg(all(not(feature = "ring"), feature = "openssl"))]
     pub fn certificate<R>(certificate: &mut R, password: &str, config: ClientConfig) -> Result<Client, Error>
     where
         R: Read,

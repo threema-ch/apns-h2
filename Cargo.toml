@@ -12,9 +12,10 @@ edition = "2024"
 rust-version = "1.85"  # set the minimum rust version we can work with.
 
 [features]
-default = ["openssl"]
+default = ["ring"]
 tracing = ["dep:tracing"]
 ring = ["dep:ring", "pem"]
+openssl = ["dep:openssl"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
