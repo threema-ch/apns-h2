@@ -255,15 +255,24 @@ impl Client {
 
         let response = response_result?;
 
-        let apns_id = response
-            .headers()
-            .get("apns-id")
-            .and_then(|s| s.to_str().ok())
-            .map(String::from);
+        let header_map = response.headers();
+
+        fn get_header_key_opt(header_map: &http::HeaderMap, key: &'static str) -> Option<String> {
+            header_map.get(key).and_then(|s| s.to_str().ok()).map(String::from)
+        }
+
+        let apns_id = get_header_key_opt(header_map, "apns-id");
+
+        let apns_unique_id = if matches!(self.options.endpoint, Endpoint::Sandbox) {
+            get_header_key_opt(header_map, "apns-unique-id")
+        } else {
+            None
+        };
 
         match response.status() {
             StatusCode::OK => Ok(Response {
                 apns_id,
+                apns_unique_id,
                 error: None,
                 code: response.status().as_u16(),
             }),
@@ -272,6 +281,7 @@ impl Client {
 
                 Err(ResponseError(Response {
                     apns_id,
+                    apns_unique_id,
                     error: serde_json::from_slice(&body.to_bytes()).ok(),
                     code: status.as_u16(),
                 }))

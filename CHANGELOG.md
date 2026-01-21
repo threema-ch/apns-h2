@@ -26,3 +26,4 @@ Possible log types:
 - [added] Support interruption-level
 - [added] Support Live activity
 - [added] Support Dismissal date
+- [added] Add all current APNs errors
