@@ -128,6 +128,7 @@ pub struct DefaultNotificationBuilder<'a> {
     attributes: Option<serde_json::Value>,
     input_push_channel: Option<&'a str>,
     input_push_token: Option<u8>,
+    dismissal_date: Option<u64>,
 }
 
 impl<'a> DefaultNotificationBuilder<'a> {
@@ -180,6 +181,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
             attributes: None,
             input_push_channel: None,
             input_push_token: None,
+            dismissal_date: None,
         }
     }
 
@@ -824,6 +826,29 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self.input_push_token = Some(1);
         self
     }
+
+    /// Set the dismissal date for when the system should automatically remove the notification.
+    /// The timestamp should be in Unix epoch time (seconds since 1970-01-01 00:00:00 UTC).
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let payload = DefaultNotificationBuilder::new()
+    ///     .set_title("a title")
+    ///     .set_dismissal_date(1672531200) // January 1, 2023 00:00:00 UTC
+    ///     .build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\"},\"mutable-content\":0,\"dismissal-date\":1672531200}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_dismissal_date(mut self, dismissal_date: u64) -> Self {
+        self.dismissal_date = Some(dismissal_date);
+        self
+    }
 }
 
 impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
@@ -845,6 +870,7 @@ impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
                 category: self.category,
                 mutable_content: Some(self.mutable_content),
                 interruption_level: self.interruption_level,
+                dismissal_date: self.dismissal_date,
                 url_args: None,
                 timestamp: self.timestamp,
                 event: self.event,
@@ -885,6 +911,29 @@ mod tests {
                     "body": "the body",
                     "title": "the title",
                 },
+                "mutable-content": 0
+            }
+        });
+
+        assert_eq!(expected_payload, to_value(payload).unwrap());
+    }
+
+    #[test]
+    fn test_default_notification_with_dismissal_date() {
+        let builder = DefaultNotificationBuilder::new()
+            .set_title("Test Title")
+            .set_body("Test Body")
+            .set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+
+        let payload = builder.build("device-token", Default::default());
+
+        let expected_payload = json!({
+            "aps": {
+                "alert": {
+                    "title": "Test Title",
+                    "body": "Test Body"
+                },
+                "dismissal-date": 1672531200,
                 "mutable-content": 0
             }
         });

@@ -29,6 +29,7 @@ pub struct WebNotificationBuilder<'a> {
     sound: Option<&'a str>,
     url_args: &'a [&'a str],
     interruption_level: Option<crate::request::payload::InterruptionLevel>,
+    dismissal_date: Option<u64>,
 }
 
 impl<'a> WebNotificationBuilder<'a> {
@@ -53,6 +54,7 @@ impl<'a> WebNotificationBuilder<'a> {
             sound: None,
             url_args,
             interruption_level: None,
+            dismissal_date: None,
         }
     }
 
@@ -186,6 +188,28 @@ impl<'a> WebNotificationBuilder<'a> {
         self.interruption_level = Some(level);
         self
     }
+
+    /// Set the dismissal date for when the system should automatically remove the notification.
+    /// The timestamp should be in Unix epoch time (seconds since 1970-01-01 00:00:00 UTC).
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{WebNotificationBuilder, NotificationBuilder, WebPushAlert};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
+    /// builder.set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"Hello\",\"body\":\"World\",\"action\":\"View\"},\"dismissal-date\":1672531200,\"url-args\":[\"arg1\"]}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn set_dismissal_date(&mut self, dismissal_date: u64) -> &mut Self {
+        self.dismissal_date = Some(dismissal_date);
+        self
+    }
 }
 
 impl<'a> NotificationBuilder<'a> for WebNotificationBuilder<'a> {
@@ -200,6 +224,7 @@ impl<'a> NotificationBuilder<'a> for WebNotificationBuilder<'a> {
                 category: None,
                 mutable_content: None,
                 interruption_level: self.interruption_level,
+                dismissal_date: self.dismissal_date,
                 url_args: Some(self.url_args),
                 timestamp: None,
                 event: None,
@@ -243,6 +268,38 @@ mod tests {
                     "body": "world",
                     "action": "View",
                 },
+                "url-args": ["arg1"]
+            }
+        });
+
+        assert_eq!(expected_payload, serde_json::from_str::<Value>(&payload).unwrap());
+    }
+
+    #[test]
+    fn test_webpush_notification_with_dismissal_date() {
+        let mut builder = WebNotificationBuilder::new(
+            WebPushAlert {
+                action: "View",
+                title: "Hello",
+                body: "world",
+            },
+            &["arg1"],
+        );
+
+        builder.set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+        let payload = builder
+            .build("device-token", Default::default())
+            .to_json_string()
+            .unwrap();
+
+        let expected_payload = json!({
+            "aps": {
+                "alert": {
+                    "title": "Hello",
+                    "body": "world",
+                    "action": "View",
+                },
+                "dismissal-date": 1672531200,
                 "url-args": ["arg1"]
             }
         });
