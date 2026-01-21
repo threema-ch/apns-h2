@@ -14,3 +14,4 @@ Possible log types:
 ### Unreleased
 
 - [changed] Remove lockfile
+- [changed] Fix msrv (set it to 1.82)
