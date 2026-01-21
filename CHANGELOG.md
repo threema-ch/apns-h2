@@ -14,6 +14,6 @@ Possible log types:
 ### Unreleased
 
 - [changed] Remove lockfile
-- [changed] Fix msrv (set it to 1.82)
+- [changed] Migrate to edition 2024 and set msrv to 1.85
 - [changed] Migrate from `rustls-pemfile` to `rustls-pki-types`
 - [changed] Rename crate to `apns-h2`
