@@ -21,14 +21,14 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  tasks:
+  os-and-rust-matrix:
     name: "[${{ matrix.os }}] ${{ matrix.cargo.name }}"
     runs-on: "${{ matrix.os }}"
     strategy:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          - 'ubuntu-latest'
         rust:
           - stable
         cargo:
@@ -82,7 +82,7 @@ jobs:
       - name: Run sccache-cache
         if: matrix.os == 'ubuntu-latest'
         uses: mozilla-actions/sccache-action@v0.0.9
-      
+
       - name: "Task ${{ matrix.cargo.name }}"
         shell: bash
         run: cargo ${{ matrix.cargo.cmd }} ${{ matrix.cargo.args }}
@@ -90,3 +90,37 @@ jobs:
       - name: Run sccache stats for check
         shell: bash
         run: ${SCCACHE_PATH} --show-stats
+
+  command-matrix:
+    name: Run ${{ matrix.command }}
+    runs-on: 'ubuntu-latest'
+    strategy:
+      fail-fast: true
+      matrix:
+        cargo:
+          - command: cargo msrv verify --ignore-lockfile
+            package: cargo-msrv
+            package-version: '~0.18'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        continue-on-error: false
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Install cargo-msrv from crates.io
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: ${{ matrix.cargo.package }}
+          version: ${{ matrix.cargo.package-version }}
+
+      - name: Run command
+        shell: bash
+        run: ${{ matrix.cargo.command }}
