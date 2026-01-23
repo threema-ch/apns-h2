@@ -92,7 +92,7 @@ jobs:
         run: ${SCCACHE_PATH} --show-stats
 
   command-matrix:
-    name: Run ${{ matrix.command }}
+    name: Run ${{ matrix.cargo.command }}
     runs-on: 'ubuntu-latest'
     strategy:
       fail-fast: true
@@ -101,6 +101,9 @@ jobs:
           - command: cargo msrv verify --ignore-lockfile
             package: cargo-msrv
             package-version: '~0.18'
+          - command: cargo audit --deny warnings
+            package: cargo-audit
+            package-version: '~0.22'
     steps:
       - uses: actions/checkout@v6
 
