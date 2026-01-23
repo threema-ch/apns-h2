@@ -34,9 +34,9 @@ jobs:
         toolchain:
           - stable
         cargo:
-          - name: "Clippy"
+          - name: "Clippy (all features)"
             cmd: clippy
-            args: -- -D clippy::all
+            args: --all-features -- -D clippy::all
             cache: {}
             components: "clippy"
           - name: "Clippy (openssl feature)"
