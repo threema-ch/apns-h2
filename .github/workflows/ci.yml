@@ -24,14 +24,14 @@ concurrency:
 
 jobs:
   os-and-rust-matrix:
-    name: "[${{ matrix.os }}] ${{ matrix.cargo.name }}"
+    name: "[${{ matrix.os }} ${{ matrix.toolchain }}] ${{ matrix.cargo.name }}"
     runs-on: "${{ matrix.os }}"
     strategy:
       fail-fast: false
       matrix:
         os:
           - 'ubuntu-latest'
-        rust:
+        toolchain:
           - stable
         cargo:
           - name: "Clippy"
@@ -70,10 +70,10 @@ jobs:
         uses: actions/checkout@v6
 
       # Install Rust toolchain
-      - name: "Install Rust ${{ matrix.rust }}"
+      - name: "Install Rust ${{ matrix.toolchain }}"
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: ${{ matrix.toolchain }}
           components: ${{ matrix.cargo.components }}
 
       - name: Rust Cache
