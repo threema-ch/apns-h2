@@ -64,7 +64,7 @@ pub struct Payload<'a> {
 ///     fn get_device_token(&self) -> &'a str {
 ///         self.device_token
 ///     }
-///     fn get_options(&self) -> &NotificationOptions {
+///     fn get_options(&self) -> &NotificationOptions<'_> {
 ///         &self.options
 ///     }
 /// }
@@ -81,7 +81,7 @@ pub trait PayloadLike: serde::Serialize + Debug {
     fn get_device_token(&self) -> &str;
 
     /// Gets [`NotificationOptions`] for this Payload.
-    fn get_options(&self) -> &NotificationOptions;
+    fn get_options(&self) -> &NotificationOptions<'_>;
 }
 
 impl<'a> PayloadLike for Payload<'a> {
@@ -89,7 +89,7 @@ impl<'a> PayloadLike for Payload<'a> {
         self.device_token
     }
 
-    fn get_options(&self) -> &NotificationOptions {
+    fn get_options(&self) -> &NotificationOptions<'_> {
         &self.options
     }
 }
