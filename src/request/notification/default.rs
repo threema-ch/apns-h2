@@ -37,7 +37,7 @@ mod bool_as_u8 {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct DefaultSound<'a> {
     #[serde(skip_serializing_if = "std::ops::Not::not", with = "bool_as_u8")]
@@ -50,7 +50,7 @@ pub struct DefaultSound<'a> {
     volume: Option<f64>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct DefaultAlert<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -110,7 +110,7 @@ pub struct DefaultAlert<'a> {
 ///   .to_json_string().unwrap();
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DefaultNotificationBuilder<'a> {
     alert: DefaultAlert<'a>,
     badge: Option<u32>,
@@ -150,39 +150,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # }
     /// ```
     pub fn new() -> DefaultNotificationBuilder<'a> {
-        DefaultNotificationBuilder {
-            alert: DefaultAlert {
-                title: None,
-                subtitle: None,
-                body: None,
-                title_loc_key: None,
-                title_loc_args: None,
-                action_loc_key: None,
-                loc_key: None,
-                loc_args: None,
-                launch_image: None,
-            },
-            badge: None,
-            sound: DefaultSound {
-                critical: false,
-                name: None,
-                volume: None,
-            },
-            thread_id: None,
-            category: None,
-            mutable_content: 0,
-            content_available: None,
-            interruption_level: None,
-            has_edited_alert: false,
-            timestamp: None,
-            event: None,
-            content_state: None,
-            attributes_type: None,
-            attributes: None,
-            input_push_channel: None,
-            input_push_token: None,
-            dismissal_date: None,
-        }
+        Self::default()
     }
 
     /// Set the title of the notification.
@@ -884,12 +852,6 @@ impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
             options,
             data: BTreeMap::new(),
         }
-    }
-}
-
-impl<'a> Default for DefaultNotificationBuilder<'a> {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
