@@ -55,9 +55,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // Notification payload
     let builder = DefaultNotificationBuilder::new()
-        .set_body(message.as_ref())
-        .set_sound("default")
-        .set_badge(1u32);
+        .body(message.as_ref())
+        .sound("default")
+        .badge(1u32);
 
     let payload = builder.build(device_token.as_ref(), options);
     let response = client.send(payload).await?;
