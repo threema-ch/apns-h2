@@ -90,22 +90,22 @@ pub struct DefaultAlert<'a> {
 /// # use apns_h2::request::payload::PayloadLike;
 /// # fn main() {
 /// let mut builder = DefaultNotificationBuilder::new()
-///     .set_title("Hi there")
-///     .set_subtitle("From bob")
-///     .set_body("What's up?")
-///     .set_badge(420)
-///     .set_category("cat1")
-///     .set_sound("prööt")
-///     .set_thread_id("my-thread")
-///     .set_critical(false, None)
-///     .set_mutable_content()
-///     .set_action_loc_key("PLAY")
-///     .set_launch_image("foo.jpg")
-///     .set_loc_args(&["argh", "narf"])
-///     .set_title_loc_key("STOP")
-///     .set_title_loc_args(&["herp", "derp"])
-///     .set_loc_key("PAUSE")
-///     .set_loc_args(&["narf", "derp"]);
+///     .title("Hi there")
+///     .subtitle("From bob")
+///     .body("What's up?")
+///     .badge(420)
+///     .category("cat1")
+///     .sound("prööt")
+///     .thread_id("my-thread")
+///     .critical(false, None)
+///     .mutable_content()
+///     .action_loc_key("PLAY")
+///     .launch_image("foo.jpg")
+///     .loc_args(&["argh", "narf"])
+///     .title_loc_key("STOP")
+///     .title_loc_args(&["herp", "derp"])
+///     .loc_key("PAUSE")
+///     .loc_args(&["narf", "derp"]);
 /// let payload = builder.build("device_id", Default::default())
 ///   .to_json_string().unwrap();
 /// # }
@@ -139,8 +139,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_body("a body")
+    ///     .title("a title")
+    ///     .body("a body")
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -162,7 +162,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title");
+    ///     .title("a title");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -171,10 +171,15 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_title(mut self, title: &'a str) -> Self {
+    pub fn title(mut self, title: &'a str) -> Self {
         self.alert.title = Some(title);
         self.has_edited_alert = true;
         self
+    }
+
+    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `title` instead")]
+    pub fn set_title(self, title: &'a str) -> Self {
+        self.title(title)
     }
 
     /// Set critical alert value for this notification
@@ -186,7 +191,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_critical(true, None);
+    ///     .critical(true, None);
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -195,7 +200,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_critical(mut self, critical: bool, volume: Option<f64>) -> Self {
+    pub fn critical(mut self, critical: bool, volume: Option<f64>) -> Self {
         if !critical {
             self.sound.volume = None;
             self.sound.critical = false;
@@ -206,6 +211,14 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `critical` instead"
+    )]
+    pub fn set_critical(self, critical: bool, volume: Option<f64>) -> Self {
+        self.critical(critical, volume)
+    }
+
     /// Used to set the subtitle which should provide additional information that explains the purpose of the notification.
     ///
     /// ```rust
@@ -213,7 +226,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_subtitle("a subtitle");
+    ///     .subtitle("a subtitle");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -222,10 +235,18 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_subtitle(mut self, subtitle: &'a str) -> Self {
+    pub fn subtitle(mut self, subtitle: &'a str) -> Self {
         self.alert.subtitle = Some(subtitle);
         self.has_edited_alert = true;
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `subtitle` instead"
+    )]
+    pub fn set_subtitle(self, subtitle: &'a str) -> Self {
+        self.subtitle(subtitle)
     }
 
     /// Sets the content of the alert message.
@@ -235,7 +256,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_body("a body");
+    ///     .body("a body");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -244,9 +265,14 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_body(mut self, body: &'a str) -> Self {
+    pub fn body(mut self, body: &'a str) -> Self {
         self.alert.body = Some(body);
         self
+    }
+
+    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `body` instead")]
+    pub fn set_body(self, body: &'a str) -> Self {
+        self.body(body)
     }
 
     /// A number to show on a badge on top of the app icon.
@@ -256,7 +282,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_badge(4);
+    ///     .badge(4);
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -265,9 +291,14 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_badge(mut self, badge: u32) -> Self {
+    pub fn badge(mut self, badge: u32) -> Self {
         self.badge = Some(badge);
         self
+    }
+
+    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `badge` instead")]
+    pub fn set_badge(self, badge: u32) -> Self {
+        self.badge(badge)
     }
 
     /// File name of the custom sound to play when receiving the notification.
@@ -277,8 +308,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_sound("ping");
+    ///     .title("a title")
+    ///     .sound("ping");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -287,9 +318,14 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_sound(mut self, sound: &'a str) -> Self {
+    pub fn sound(mut self, sound: &'a str) -> Self {
         self.sound.name = Some(sound);
         self
+    }
+
+    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `sound` instead")]
+    pub fn set_sound(self, sound: &'a str) -> Self {
+        self.sound(sound)
     }
 
     /// An application-specific name that allows notifications to be grouped together.
@@ -299,8 +335,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_thread_id("my-thread");
+    ///     .title("a title")
+    ///     .thread_id("my-thread");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -309,7 +345,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_thread_id(mut self, thread_id: &'a str) -> Self {
+    pub fn thread_id(mut self, thread_id: &'a str) -> Self {
         self.thread_id = Some(thread_id);
         self
     }
@@ -322,8 +358,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_category("cat1");
+    ///     .title("a title")
+    ///     .category("cat1");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -332,9 +368,17 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_category(mut self, category: &'a str) -> Self {
+    pub fn category(mut self, category: &'a str) -> Self {
         self.category = Some(category);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `category` instead"
+    )]
+    pub fn set_category(self, category: &'a str) -> Self {
+        self.category(category)
     }
 
     /// The localization key for the notification title.
@@ -344,8 +388,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_title_loc_key("play");
+    ///     .title("a title")
+    ///     .title_loc_key("play");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -354,10 +398,18 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_title_loc_key(mut self, key: &'a str) -> Self {
+    pub fn title_loc_key(mut self, key: &'a str) -> Self {
         self.alert.title_loc_key = Some(key);
         self.has_edited_alert = true;
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `title_loc_key` instead"
+    )]
+    pub fn set_title_loc_key(self, key: &'a str) -> Self {
+        self.title_loc_key(key)
     }
 
     /// Arguments for the title localization.
@@ -367,8 +419,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_title_loc_args(&["foo", "bar"]);
+    ///     .title("a title")
+    ///     .title_loc_args(&["foo", "bar"]);
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -377,7 +429,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_title_loc_args<S>(mut self, args: &'a [S]) -> Self
+    pub fn title_loc_args<S>(mut self, args: &'a [S]) -> Self
     where
         S: Into<Cow<'a, str>> + AsRef<str>,
     {
@@ -388,6 +440,17 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `title_loc_args` instead"
+    )]
+    pub fn set_title_loc_args<S>(self, key: &'a [S]) -> Self
+    where
+        S: Into<Cow<'a, str>> + AsRef<str>,
+    {
+        self.title_loc_args(key)
+    }
+
     /// The localization key for the action.
     ///
     /// ```rust
@@ -395,8 +458,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_action_loc_key("stop");
+    ///     .title("a title")
+    ///     .action_loc_key("stop");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -405,10 +468,18 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_action_loc_key(mut self, key: &'a str) -> Self {
+    pub fn action_loc_key(mut self, key: &'a str) -> Self {
         self.alert.action_loc_key = Some(key);
         self.has_edited_alert = true;
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `action_loc_key` instead"
+    )]
+    pub fn set_action_loc_key(self, key: &'a str) -> Self {
+        self.action_loc_key(key)
     }
 
     /// The localization key for the push message body.
@@ -418,8 +489,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_loc_key("lol");
+    ///     .title("a title")
+    ///     .loc_key("lol");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -428,10 +499,18 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_loc_key(mut self, key: &'a str) -> Self {
+    pub fn loc_key(mut self, key: &'a str) -> Self {
         self.alert.loc_key = Some(key);
         self.has_edited_alert = true;
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `loc_key` instead"
+    )]
+    pub fn set_loc_key(self, key: &'a str) -> Self {
+        self.loc_key(key)
     }
 
     /// Arguments for the content localization.
@@ -441,8 +520,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_loc_args(&["omg", "foo"]);
+    ///     .title("a title")
+    ///     .loc_args(&["omg", "foo"]);
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -451,7 +530,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_loc_args<S>(mut self, args: &'a [S]) -> Self
+    pub fn loc_args<S>(mut self, args: &'a [S]) -> Self
     where
         S: Into<Cow<'a, str>> + AsRef<str>,
     {
@@ -462,6 +541,17 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `loc_args` instead"
+    )]
+    pub fn set_loc_args<S>(self, key: &'a [S]) -> Self
+    where
+        S: Into<Cow<'a, str>> + AsRef<str>,
+    {
+        self.loc_args(key)
+    }
+
     /// Image to display in the rich notification.
     ///
     /// ```rust
@@ -469,8 +559,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_launch_image("cat.png");
+    ///     .title("a title")
+    ///     .launch_image("cat.png");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -479,10 +569,18 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_launch_image(mut self, image: &'a str) -> Self {
+    pub fn launch_image(mut self, image: &'a str) -> Self {
         self.alert.launch_image = Some(image);
         self.has_edited_alert = true;
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `launch_image` instead"
+    )]
+    pub fn set_launch_image(self, image: &'a str) -> Self {
+        self.launch_image(image)
     }
 
     /// Allow client to modify push content before displaying.
@@ -492,8 +590,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_mutable_content();
+    ///     .title("a title")
+    ///     .mutable_content();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -502,9 +600,17 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_mutable_content(mut self) -> Self {
+    pub fn mutable_content(mut self) -> Self {
         self.mutable_content = 1;
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `mutable_content` instead"
+    )]
+    pub fn set_mutable_content(self) -> Self {
+        self.mutable_content()
     }
 
     /// Used for adding custom data to push notifications
@@ -514,8 +620,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_content_available();
+    ///     .title("a title")
+    ///     .content_available();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -524,9 +630,17 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_content_available(mut self) -> Self {
+    pub fn content_available(mut self) -> Self {
         self.content_available = Some(1);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `content_available` instead"
+    )]
+    pub fn set_content_available(self) -> Self {
+        self.content_available()
     }
 
     /// Set the interruption level to active. The system presents the notification
@@ -537,8 +651,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_active_interruption_level();
+    ///     .title("a title")
+    ///     .active_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -547,7 +661,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_active_interruption_level(mut self) -> Self {
+    pub fn active_interruption_level(mut self) -> Self {
         self.interruption_level = Some(InterruptionLevel::Active);
         self
     }
@@ -560,8 +674,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_critical_interruption_level();
+    ///     .title("a title")
+    ///     .critical_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -570,7 +684,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_critical_interruption_level(mut self) -> Self {
+    pub fn critical_interruption_level(mut self) -> Self {
         self.interruption_level = Some(InterruptionLevel::Critical);
         self
     }
@@ -583,8 +697,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_passive_interruption_level();
+    ///     .title("a title")
+    ///     .passive_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -593,7 +707,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_passive_interruption_level(mut self) -> Self {
+    pub fn passive_interruption_level(mut self) -> Self {
         self.interruption_level = Some(InterruptionLevel::Passive);
         self
     }
@@ -607,8 +721,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_time_sensitive_interruption_level();
+    ///     .title("a title")
+    ///     .time_sensitive_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -617,7 +731,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_time_sensitive_interruption_level(mut self) -> Self {
+    pub fn time_sensitive_interruption_level(mut self) -> Self {
         self.interruption_level = Some(InterruptionLevel::TimeSensitive);
         self
     }
@@ -629,8 +743,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::{PayloadLike, InterruptionLevel};
     /// # fn main() {
     /// let mut builder = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_interruption_level(InterruptionLevel::Active);
+    ///     .title("a title")
+    ///     .interruption_level(InterruptionLevel::Active);
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -639,7 +753,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_interruption_level(mut self, level: InterruptionLevel) -> Self {
+    pub fn interruption_level(mut self, level: InterruptionLevel) -> Self {
         self.interruption_level = Some(level);
         self
     }
@@ -651,7 +765,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_timestamp(1234)
+    ///     .timestamp(1234)
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -660,7 +774,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_timestamp(mut self, timestamp: u64) -> Self {
+    pub fn timestamp(mut self, timestamp: u64) -> Self {
         self.timestamp = Some(timestamp);
         self
     }
@@ -672,7 +786,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_event("start")
+    ///     .event("start")
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -681,7 +795,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_event(mut self, event: &'a str) -> Self {
+    pub fn event(mut self, event: &'a str) -> Self {
         self.event = Some(event);
         self
     }
@@ -698,13 +812,13 @@ impl<'a> DefaultNotificationBuilder<'a> {
     ///     "eventDescription": "Adventure has begun!"
     /// });
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_content_state(&content_state)
+    ///     .content_state(&content_state)
     ///     .build("token", Default::default());
     ///
     /// assert!(payload.to_json_string().unwrap().contains("\"content-state\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"));
     /// # }
     /// ```
-    pub fn set_content_state(mut self, content_state: &serde_json::Value) -> Self {
+    pub fn content_state(mut self, content_state: &serde_json::Value) -> Self {
         self.content_state = Some(content_state.clone());
         self
     }
@@ -716,7 +830,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_attributes_type("AdventureAttributes")
+    ///     .attributes_type("AdventureAttributes")
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -725,7 +839,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_attributes_type(mut self, attributes_type: &'a str) -> Self {
+    pub fn attributes_type(mut self, attributes_type: &'a str) -> Self {
         self.attributes_type = Some(attributes_type);
         self
     }
@@ -742,13 +856,13 @@ impl<'a> DefaultNotificationBuilder<'a> {
     ///     "eventDescription": "Adventure has begun!"
     /// });
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_attributes(&attributes)
+    ///     .attributes(&attributes)
     ///     .build("token", Default::default());
     ///
     /// assert!(payload.to_json_string().unwrap().contains("\"attributes\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"));
     /// # }
     /// ```
-    pub fn set_attributes(mut self, attributes: &serde_json::Value) -> Self {
+    pub fn attributes(mut self, attributes: &serde_json::Value) -> Self {
         self.attributes = Some(attributes.clone());
         self
     }
@@ -760,7 +874,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_input_push_channel("dHN0LXNyY2gtY2hubA==")
+    ///     .input_push_channel("dHN0LXNyY2gtY2hubA==")
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -769,7 +883,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_input_push_channel(mut self, channel_id: &'a str) -> Self {
+    pub fn input_push_channel(mut self, channel_id: &'a str) -> Self {
         self.input_push_channel = Some(channel_id);
         self
     }
@@ -781,7 +895,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_input_push_token()
+    ///     .input_push_token()
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -790,7 +904,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_input_push_token(mut self) -> Self {
+    pub fn input_push_token(mut self) -> Self {
         self.input_push_token = Some(1);
         self
     }
@@ -803,8 +917,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let payload = DefaultNotificationBuilder::new()
-    ///     .set_title("a title")
-    ///     .set_dismissal_date(1672531200) // January 1, 2023 00:00:00 UTC
+    ///     .title("a title")
+    ///     .dismissal_date(1672531200) // January 1, 2023 00:00:00 UTC
     ///     .build("token", Default::default());
     ///
     /// assert_eq!(
@@ -813,7 +927,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_dismissal_date(mut self, dismissal_date: u64) -> Self {
+    pub fn dismissal_date(mut self, dismissal_date: u64) -> Self {
         self.dismissal_date = Some(dismissal_date);
         self
     }
@@ -863,8 +977,8 @@ mod tests {
     #[test]
     fn test_default_notification_with_minimal_required_values() {
         let payload = DefaultNotificationBuilder::new()
-            .set_title("the title")
-            .set_body("the body")
+            .title("the title")
+            .body("the body")
             .build("device-token", Default::default());
 
         let expected_payload = json!({
@@ -883,9 +997,9 @@ mod tests {
     #[test]
     fn test_default_notification_with_dismissal_date() {
         let builder = DefaultNotificationBuilder::new()
-            .set_title("Test Title")
-            .set_body("Test Body")
-            .set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+            .title("Test Title")
+            .body("Test Body")
+            .dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
 
         let payload = builder.build("device-token", Default::default());
 
@@ -906,20 +1020,20 @@ mod tests {
     #[test]
     fn test_default_notification_with_full_data() {
         let builder = DefaultNotificationBuilder::new()
-            .set_title("the title")
-            .set_body("the body")
-            .set_badge(420)
-            .set_category("cat1")
-            .set_sound("prööt")
-            .set_critical(true, Some(1.0))
-            .set_mutable_content()
-            .set_action_loc_key("PLAY")
-            .set_launch_image("foo.jpg")
-            .set_loc_args(&["argh", "narf"])
-            .set_title_loc_key("STOP")
-            .set_title_loc_args(&["herp", "derp"])
-            .set_loc_key("PAUSE")
-            .set_loc_args(&["narf", "derp"]);
+            .title("the title")
+            .body("the body")
+            .badge(420)
+            .category("cat1")
+            .sound("prööt")
+            .critical(true, Some(1.0))
+            .mutable_content()
+            .action_loc_key("PLAY")
+            .launch_image("foo.jpg")
+            .loc_args(&["argh", "narf"])
+            .title_loc_key("STOP")
+            .title_loc_args(&["herp", "derp"])
+            .loc_key("PAUSE")
+            .loc_args(&["narf", "derp"]);
 
         let payload = builder.build("device-token", Default::default());
 
@@ -972,8 +1086,8 @@ mod tests {
         };
 
         let mut payload = DefaultNotificationBuilder::new()
-            .set_title("the title")
-            .set_body("the body")
+            .title("the title")
+            .body("the body")
             .build("device-token", Default::default());
 
         payload.add_custom_data("custom", &test_data).unwrap();
@@ -1022,7 +1136,7 @@ mod tests {
         };
 
         let mut payload = DefaultNotificationBuilder::new()
-            .set_body("kulli")
+            .body("kulli")
             .build("device-token", Default::default());
 
         payload.add_custom_data("custom", &test_data).unwrap();
@@ -1048,7 +1162,7 @@ mod tests {
     #[test]
     fn test_silent_notification_with_no_content() {
         let payload = DefaultNotificationBuilder::new()
-            .set_content_available()
+            .content_available()
             .build("device-token", Default::default());
 
         let expected_payload = json!({
@@ -1084,7 +1198,7 @@ mod tests {
         };
 
         let mut payload = DefaultNotificationBuilder::new()
-            .set_content_available()
+            .content_available()
             .build("device-token", Default::default());
 
         payload.add_custom_data("custom", &test_data).unwrap();
@@ -1114,7 +1228,7 @@ mod tests {
         test_data.insert("key_str2", "bar");
 
         let mut payload = DefaultNotificationBuilder::new()
-            .set_content_available()
+            .content_available()
             .build("device-token", Default::default());
 
         payload.add_custom_data("custom", &test_data).unwrap();

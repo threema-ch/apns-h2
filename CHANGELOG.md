@@ -29,3 +29,4 @@ Possible log types:
 - [added] Add all current APNs errors
 - [changed] Make `hyper-rustls` use `rustls-platform-verifier`
 - [changed] Change APNs development endpoint to api.sandbox.push.apple.com
+- [changed] Mark `set_` functions on builder as deprecated

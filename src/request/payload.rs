@@ -35,10 +35,10 @@ pub struct Payload<'a> {
 ///
 /// async fn send() -> Result<(), Box<dyn std::error::Error>> {
 ///     let builder = DefaultNotificationBuilder::new()
-///         .set_body("Hi there")
-///         .set_badge(420)
-///         .set_category("cat1")
-///         .set_sound("ping.flac");
+///         .body("Hi there")
+///         .badge(420)
+///         .category("cat1")
+///         .sound("ping.flac");
 ///
 ///     let payload = builder.build("device-token-from-the-user", Default::default());
 ///     let mut file = File::open("/path/to/private_key.p8")?;
@@ -110,7 +110,7 @@ impl<'a> Payload<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut payload = DefaultNotificationBuilder::new()
-    ///     .set_content_available()
+    ///     .content_available()
     ///     .build("token", Default::default());
     /// let mut custom_data = HashMap::new();
     ///
@@ -137,7 +137,7 @@ impl<'a> Payload<'a> {
     /// }
     ///
     /// let mut payload = DefaultNotificationBuilder::new()
-    ///     .set_content_available()
+    ///     .content_available()
     ///     .build("token", Default::default());
     /// let mut custom_data = CompanyData { foo: "bar" };
     ///
@@ -276,32 +276,32 @@ mod tests {
     #[test]
     fn test_interruption_level_serialization() {
         let builder = DefaultNotificationBuilder::new()
-            .set_title("Test Title")
-            .set_active_interruption_level();
+            .title("Test Title")
+            .active_interruption_level();
         let payload = builder.build("test-token", Default::default());
 
         let json = payload.to_json_string().unwrap();
         assert!(json.contains("\"interruption-level\":\"active\""));
 
         let builder = DefaultNotificationBuilder::new()
-            .set_title("Test Title")
-            .set_critical_interruption_level();
+            .title("Test Title")
+            .critical_interruption_level();
         let payload = builder.build("test-token", Default::default());
 
         let json = payload.to_json_string().unwrap();
         assert!(json.contains("\"interruption-level\":\"critical\""));
 
         let builder = DefaultNotificationBuilder::new()
-            .set_title("Test Title")
-            .set_passive_interruption_level();
+            .title("Test Title")
+            .passive_interruption_level();
         let payload = builder.build("test-token", Default::default());
 
         let json = payload.to_json_string().unwrap();
         assert!(json.contains("\"interruption-level\":\"passive\""));
 
         let builder = DefaultNotificationBuilder::new()
-            .set_title("Test Title")
-            .set_time_sensitive_interruption_level();
+            .title("Test Title")
+            .time_sensitive_interruption_level();
         let payload = builder.build("test-token", Default::default());
 
         let json = payload.to_json_string().unwrap();
@@ -311,8 +311,8 @@ mod tests {
     #[test]
     fn test_dismissal_date_serialization() {
         let builder = DefaultNotificationBuilder::new()
-            .set_title("Test Title")
-            .set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+            .title("Test Title")
+            .dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
         let payload = builder.build("test-token", Default::default());
 
         let json = payload.to_json_string().unwrap();
@@ -334,13 +334,13 @@ mod tests {
         });
 
         let builder = DefaultNotificationBuilder::new()
-            .set_timestamp(1234)
-            .set_event("start")
-            .set_content_state(&content_state)
-            .set_attributes_type("AdventureAttributes")
-            .set_attributes(&attributes)
-            .set_title("Adventure Alert")
-            .set_body("Your adventure has started!");
+            .timestamp(1234)
+            .event("start")
+            .content_state(&content_state)
+            .attributes_type("AdventureAttributes")
+            .attributes(&attributes)
+            .title("Adventure Alert")
+            .body("Your adventure has started!");
 
         let payload = builder.build("test-token", Default::default());
         let json_str = payload.to_json_string().unwrap();
@@ -361,10 +361,10 @@ mod tests {
 
         // Test iOS 18 channel-based Live Activity
         let builder = DefaultNotificationBuilder::new()
-            .set_event("start")
-            .set_input_push_channel("dHN0LXNyY2gtY2hubA==")
-            .set_attributes_type("AdventureAttributes")
-            .set_attributes(&attributes);
+            .event("start")
+            .input_push_channel("dHN0LXNyY2gtY2hubA==")
+            .attributes_type("AdventureAttributes")
+            .attributes(&attributes);
 
         let payload = builder.build("test-token", Default::default());
         let json_str = payload.to_json_string().unwrap();
@@ -373,10 +373,10 @@ mod tests {
 
         // Test iOS 18 token-based Live Activity
         let builder = DefaultNotificationBuilder::new()
-            .set_event("start")
-            .set_input_push_token()
-            .set_attributes_type("AdventureAttributes")
-            .set_attributes(&attributes);
+            .event("start")
+            .input_push_token()
+            .attributes_type("AdventureAttributes")
+            .attributes(&attributes);
 
         let payload = builder.build("test-token", Default::default());
         let json_str = payload.to_json_string().unwrap();

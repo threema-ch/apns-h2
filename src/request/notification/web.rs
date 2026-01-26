@@ -19,7 +19,7 @@ pub struct WebPushAlert<'a> {
 /// # use apns_h2::request::payload::PayloadLike;
 /// # fn main() {
 /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-/// builder.set_sound("prööt");
+/// builder.sound("prööt");
 /// let payload = builder.build("device_id", Default::default())
 ///    .to_json_string().unwrap();
 /// # }
@@ -65,7 +65,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_sound("meow");
+    /// builder.sound("meow");
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -74,9 +74,14 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_sound(&mut self, sound: &'a str) -> &mut Self {
+    pub fn sound(&mut self, sound: &'a str) -> &mut Self {
         self.sound = Some(sound);
         self
+    }
+
+    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `sound` instead")]
+    pub fn set_sound(&mut self, sound: &'a str) -> &mut Self {
+        self.sound(sound)
     }
 
     /// Set the interruption level to active. The system presents the notification
@@ -87,7 +92,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_active_interruption_level();
+    /// builder.active_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -96,9 +101,17 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_active_interruption_level(&mut self) -> &mut Self {
+    pub fn active_interruption_level(&mut self) -> &mut Self {
         self.interruption_level = Some(crate::request::payload::InterruptionLevel::Active);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `active_interruption_level` instead"
+    )]
+    pub fn set_active_interruption_level(&mut self) -> &mut Self {
+        self.active_interruption_level()
     }
 
     /// Set the interruption level to critical. The system presents the notification
@@ -109,7 +122,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_critical_interruption_level();
+    /// builder.critical_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -118,9 +131,17 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_critical_interruption_level(&mut self) -> &mut Self {
+    pub fn critical_interruption_level(&mut self) -> &mut Self {
         self.interruption_level = Some(crate::request::payload::InterruptionLevel::Critical);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `critical_interruption_level` instead"
+    )]
+    pub fn set_critical_interruption_level(&mut self) -> &mut Self {
+        self.critical_interruption_level()
     }
 
     /// Set the interruption level to passive. The system adds the notification to
@@ -131,7 +152,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_passive_interruption_level();
+    /// builder.passive_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -140,9 +161,17 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_passive_interruption_level(&mut self) -> &mut Self {
+    pub fn passive_interruption_level(&mut self) -> &mut Self {
         self.interruption_level = Some(crate::request::payload::InterruptionLevel::Passive);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `passive_interruption_level` instead"
+    )]
+    pub fn set_passive_interruption_level(&mut self) -> &mut Self {
+        self.passive_interruption_level()
     }
 
     /// Set the interruption level to time sensitive. The system presents the notification
@@ -154,7 +183,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_time_sensitive_interruption_level();
+    /// builder.time_sensitive_interruption_level();
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -163,9 +192,17 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_time_sensitive_interruption_level(&mut self) -> &mut Self {
+    pub fn time_sensitive_interruption_level(&mut self) -> &mut Self {
         self.interruption_level = Some(crate::request::payload::InterruptionLevel::TimeSensitive);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `time_sensitive_interruption_level` instead"
+    )]
+    pub fn set_time_sensitive_interruption_level(&mut self) -> &mut Self {
+        self.time_sensitive_interruption_level()
     }
 
     /// Set the interruption level directly. Controls how the notification is presented to the user.
@@ -175,7 +212,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::{PayloadLike, InterruptionLevel};
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_interruption_level(InterruptionLevel::Active);
+    /// builder.interruption_level(InterruptionLevel::Active);
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -184,9 +221,17 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_interruption_level(&mut self, level: crate::request::payload::InterruptionLevel) -> &mut Self {
+    pub fn interruption_level(&mut self, level: crate::request::payload::InterruptionLevel) -> &mut Self {
         self.interruption_level = Some(level);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `interruption_level` instead"
+    )]
+    pub fn set_interruption_level(&mut self, level: crate::request::payload::InterruptionLevel) -> &mut Self {
+        self.interruption_level(level)
     }
 
     /// Set the dismissal date for when the system should automatically remove the notification.
@@ -197,7 +242,7 @@ impl<'a> WebNotificationBuilder<'a> {
     /// # use apns_h2::request::payload::PayloadLike;
     /// # fn main() {
     /// let mut builder = WebNotificationBuilder::new(WebPushAlert {title: "Hello", body: "World", action: "View"}, &["arg1"]);
-    /// builder.set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+    /// builder.dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
@@ -206,9 +251,17 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn set_dismissal_date(&mut self, dismissal_date: u64) -> &mut Self {
+    pub fn dismissal_date(&mut self, dismissal_date: u64) -> &mut Self {
         self.dismissal_date = Some(dismissal_date);
         self
+    }
+
+    #[deprecated(
+        since = "0.11.0",
+        note = "The builder was made more idiomatic. Use `dismissal_date` instead"
+    )]
+    pub fn set_dismissal_date(&mut self, dismissal_date: u64) -> &mut Self {
+        self.dismissal_date(dismissal_date)
     }
 }
 
@@ -286,7 +339,7 @@ mod tests {
             &["arg1"],
         );
 
-        builder.set_dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
+        builder.dismissal_date(1672531200); // January 1, 2023 00:00:00 UTC
         let payload = builder
             .build("device-token", Default::default())
             .to_json_string()
