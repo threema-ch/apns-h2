@@ -13,6 +13,10 @@ Possible log types:
 
 ### Unreleased
 
+- ...
+
+### [v0.11.0-alpha.0][v0.11.0-alpha.0] (2026-01-26)
+
 - [changed] Remove lockfile
 - [changed] Migrate to edition 2024 and set msrv to 1.85
 - [changed] Migrate from `rustls-pemfile` to `rustls-pki-types`
@@ -32,3 +36,5 @@ Possible log types:
 - [changed] Mark `set_` functions on builder as deprecated
 - [added] Support for subtitle-loc-(key|args) in alert
 - [changed] Remove support for legacy body-only alert notification
+
+[0.11.0-alpha.0]: https://github.com/threema-ch/apns-h2/compare/v0.10.0...v0.11.0-alpha.0
