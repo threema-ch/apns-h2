@@ -1,45 +1,61 @@
 [package]
 name = "apns-h2"
 version = "0.10.0"
-license = "MIT"
-readme  = "README.md"
-description = "Async HTTP/2 APNs client based on hyper"
-keywords    = ["apns", "apple", "push", "async", "http2"]
-repository  = "https://github.com/threema-ch/apns-h2.git"
-homepage    = "https://threema.ch/"
-documentation = "https://docs.rs/apns-h2"
 edition = "2024"
-rust-version = "1.85"  # set the minimum rust version we can work with.
-
-[features]
-default = ["ring"]
-tracing = ["dep:tracing"]
-ring = ["dep:ring", "pem", "p12-keystore", "hyper-rustls/ring", "rustls/ring"]
-openssl = ["dep:openssl", "rustls-openssl"]
+rust-version = "1.85"
+description = "Async HTTP/2 APNs client based on hyper"
+documentation = "https://docs.rs/apns-h2"
+readme = "README.md"
+homepage = "https://threema.ch/"
+repository = "https://github.com/threema-ch/apns-h2.git"
+license = "MIT"
+keywords = ["apns", "apple", "async", "http2", "push"]
 
 [dependencies]
-serde = { version = "1", features = ["derive"] }
-erased-serde = "0.4"
-serde_json = "1"
-thiserror = "2"
-openssl = { version = "0.10", optional = true }
-hyper = { version = "1.0", default-features = false, features = ["client", "http2"] }
-hyper-util = { version = "0.1", features = ["client", "http2", "client-legacy", "tokio"] }
-http-body-util = "0.1"
-http = "1.0"
 base64 = "0.22"
-tracing = { version = "0.1", optional = true }
+erased-serde = "0.4"
+http = "1.0"
+http-body-util = "0.1"
+hyper = { version = "1.0", default-features = false, features = [
+    "client",
+    "http2",
+] }
+hyper-rustls = { version = "0.27", default-features = false, features = [
+    "http2",
+    "native-tokio",
+    "rustls-platform-verifier",
+] }
+hyper-util = { version = "0.1", features = [
+    "client",
+    "client-legacy",
+    "http2",
+    "tokio",
+] }
+openssl = { version = "0.10", optional = true }
+p12-keystore = { version = "0.2.0", optional = true }
+parking_lot = "0.12"
 pem = { version = "3.0", optional = true }
 ring = { version = "0.17", features = ["std"], optional = true }
-hyper-rustls = { version = "0.27", default-features = false, features = ["native-tokio", "http2", "rustls-platform-verifier"] }
-rustls = { version = "0.23", default-features = false, features = ["logging", "tls12", "std"] }
-parking_lot = "0.12"
-tokio = { version = "1", features = ["time"] }
-rustls-pki-types = { version = "1.14.0", features = ["std"]}
-p12-keystore = { version = "0.2.0", optional = true }
+rustls = { version = "0.23", default-features = false, features = [
+    "logging",
+    "std",
+    "tls12",
+] }
 rustls-openssl = { version = "0.3.0", optional = true }
+rustls-pki-types = { version = "1.14.0", features = ["std"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["time"] }
+tracing = { version = "0.1", optional = true }
 
 [dev-dependencies]
 argparse = "0.2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tracing-subscriber = "0.3"
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[features]
+default = ["ring"]
+openssl = ["dep:openssl", "rustls-openssl"]
+ring = ["dep:ring", "hyper-rustls/ring", "p12-keystore", "pem", "rustls/ring"]
+tracing = ["dep:tracing"]
