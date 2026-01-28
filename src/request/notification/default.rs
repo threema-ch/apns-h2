@@ -181,7 +181,10 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
-    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `title` instead")]
+    #[deprecated(
+        since = "0.11.0",
+        note = "Use the idiomatic `title` instead of the legacy `set_*` fn"
+    )]
     pub fn set_title(self, title: impl Into<Cow<'a, str>>) -> Self {
         self.title(title)
     }
@@ -217,7 +220,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `critical` instead"
+        note = "Use the idiomatic `critical` instead of the legacy `set_*` fn"
     )]
     pub fn set_critical(self, critical: bool, volume: Option<f64>) -> Self {
         self.critical(critical, volume)
@@ -246,7 +249,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `subtitle` instead"
+        note = "Use the idiomatic `subtitle` instead of the legacy `set_*` fn"
     )]
     pub fn set_subtitle(self, subtitle: impl Into<Cow<'a, str>>) -> Self {
         self.subtitle(subtitle)
@@ -273,7 +276,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
-    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `body` instead")]
+    #[deprecated(since = "0.11.0", note = "Use the idiomatic `body` instead of the legacy `set_*` fn")]
     pub fn set_body(self, body: impl Into<Cow<'a, str>>) -> Self {
         self.body(body)
     }
@@ -299,7 +302,10 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
-    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `badge` instead")]
+    #[deprecated(
+        since = "0.11.0",
+        note = "Use the idiomatic `badge` instead of the legacy `set_*` fn"
+    )]
     pub fn set_badge(self, badge: u32) -> Self {
         self.badge(badge)
     }
@@ -326,7 +332,10 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
-    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `sound` instead")]
+    #[deprecated(
+        since = "0.11.0",
+        note = "Use the idiomatic `sound` instead of the legacy `set_*` fn"
+    )]
     pub fn set_sound(self, sound: impl Into<Cow<'a, str>>) -> Self {
         self.sound(sound)
     }
@@ -378,7 +387,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `category` instead"
+        note = "Use the idiomatic `category` instead of the legacy `set_*` fn"
     )]
     pub fn set_category(self, category: impl Into<Cow<'a, str>>) -> Self {
         self.category(category)
@@ -457,7 +466,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `title_loc_key` instead"
+        note = "Use the idiomatic `title_loc_key` instead of the legacy `set_*` fn"
     )]
     pub fn set_title_loc_key(self, key: impl Into<Cow<'a, str>>) -> Self {
         self.title_loc_key(key)
@@ -492,7 +501,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `title_loc_args` instead"
+        note = "Use the idiomatic `title_loc_args` instead of the legacy `set_*` fn"
     )]
     pub fn set_title_loc_args<S>(self, key: &'a [S]) -> Self
     where
@@ -525,7 +534,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `action_loc_key` instead"
+        note = "Use the idiomatic `action_loc_key` instead of the legacy `set_*` fn"
     )]
     pub fn set_action_loc_key(self, key: impl Into<Cow<'a, str>>) -> Self {
         self.action_loc_key(key)
@@ -555,7 +564,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `loc_key` instead"
+        note = "Use the idiomatic `loc_key` instead of the legacy `set_*` fn"
     )]
     pub fn set_loc_key(self, key: impl Into<Cow<'a, str>>) -> Self {
         self.loc_key(key)
@@ -590,7 +599,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `loc_args` instead"
+        note = "Use the idiomatic `loc_args` instead of the legacy `set_*` fn"
     )]
     pub fn set_loc_args<S>(self, key: &'a [S]) -> Self
     where
@@ -623,7 +632,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `launch_image` instead"
+        note = "Use the idiomatic `launch_image` instead of the legacy `set_*` fn"
     )]
     pub fn set_launch_image(self, image: impl Into<Cow<'a, str>>) -> Self {
         self.launch_image(image)
@@ -653,7 +662,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `mutable_content` instead"
+        note = "Use the idiomatic `mutable_content` instead of the legacy `set_*` fn"
     )]
     pub fn set_mutable_content(self) -> Self {
         self.mutable_content()
@@ -683,7 +692,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `content_available` instead"
+        note = "Use the idiomatic `content_available` instead of the legacy `set_*` fn"
     )]
     pub fn set_content_available(self) -> Self {
         self.content_available()
