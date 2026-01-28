@@ -83,7 +83,10 @@ impl<'a> WebNotificationBuilder<'a> {
         self
     }
 
-    #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `sound` instead")]
+    #[deprecated(
+        since = "0.11.0",
+        note = "Use the idiomatic `sound` instead of the legacy `set_*` fn"
+    )]
     pub fn set_sound(&mut self, sound: impl Into<Cow<'a, str>>) -> &mut Self {
         self.sound(sound)
     }
@@ -112,7 +115,7 @@ impl<'a> WebNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `active_interruption_level` instead"
+        note = "Use the idiomatic `active_interruption_level` instead of the legacy `set_*` fn"
     )]
     pub fn set_active_interruption_level(&mut self) -> &mut Self {
         self.active_interruption_level()
@@ -142,7 +145,7 @@ impl<'a> WebNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `critical_interruption_level` instead"
+        note = "Use the idiomatic `critical_interruption_level` instead of the legacy `set_*` fn"
     )]
     pub fn set_critical_interruption_level(&mut self) -> &mut Self {
         self.critical_interruption_level()
@@ -172,7 +175,7 @@ impl<'a> WebNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `passive_interruption_level` instead"
+        note = "Use the idiomatic `passive_interruption_level` instead of the legacy `set_*` fn"
     )]
     pub fn set_passive_interruption_level(&mut self) -> &mut Self {
         self.passive_interruption_level()
@@ -203,7 +206,7 @@ impl<'a> WebNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `time_sensitive_interruption_level` instead"
+        note = "Use the idiomatic `time_sensitive_interruption_level` instead of the legacy `set_*` fn"
     )]
     pub fn set_time_sensitive_interruption_level(&mut self) -> &mut Self {
         self.time_sensitive_interruption_level()
@@ -232,7 +235,7 @@ impl<'a> WebNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `interruption_level` instead"
+        note = "Use the idiomatic `interruption_level` instead of the legacy `set_*` fn"
     )]
     pub fn set_interruption_level(&mut self, level: crate::request::payload::InterruptionLevel) -> &mut Self {
         self.interruption_level(level)
@@ -262,7 +265,7 @@ impl<'a> WebNotificationBuilder<'a> {
 
     #[deprecated(
         since = "0.11.0",
-        note = "The builder was made more idiomatic. Use `dismissal_date` instead"
+        note = "Use the idiomatic `dismissal_date` instead of the legacy `set_*` fn"
     )]
     pub fn set_dismissal_date(&mut self, dismissal_date: u64) -> &mut Self {
         self.dismissal_date(dismissal_date)
