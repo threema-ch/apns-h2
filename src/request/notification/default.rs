@@ -44,7 +44,7 @@ pub struct DefaultSound<'a> {
     critical: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    name: Option<&'a str>,
+    name: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     volume: Option<f64>,
@@ -54,34 +54,34 @@ pub struct DefaultSound<'a> {
 #[serde(rename_all = "kebab-case")]
 pub struct DefaultAlert<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    title: Option<&'a str>,
+    title: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    subtitle: Option<&'a str>,
+    subtitle: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    body: Option<&'a str>,
+    body: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    launch_image: Option<&'a str>,
+    launch_image: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    title_loc_key: Option<&'a str>,
+    title_loc_key: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     title_loc_args: Option<Vec<Cow<'a, str>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    subtitle_loc_key: Option<&'a str>,
+    subtitle_loc_key: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     subtitle_loc_args: Option<Vec<Cow<'a, str>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    action_loc_key: Option<&'a str>,
+    action_loc_key: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    loc_key: Option<&'a str>,
+    loc_key: Option<Cow<'a, str>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     loc_args: Option<Vec<Cow<'a, str>>>,
@@ -121,17 +121,17 @@ pub struct DefaultNotificationBuilder<'a> {
     alert: DefaultAlert<'a>,
     badge: Option<u32>,
     sound: DefaultSound<'a>,
-    thread_id: Option<&'a str>,
-    category: Option<&'a str>,
+    thread_id: Option<Cow<'a, str>>,
+    category: Option<Cow<'a, str>>,
     mutable_content: u8,
     content_available: Option<u8>,
     interruption_level: Option<InterruptionLevel>,
     timestamp: Option<u64>,
-    event: Option<&'a str>,
+    event: Option<Cow<'a, str>>,
     content_state: Option<serde_json::Value>,
-    attributes_type: Option<&'a str>,
+    attributes_type: Option<Cow<'a, str>>,
     attributes: Option<serde_json::Value>,
-    input_push_channel: Option<&'a str>,
+    input_push_channel: Option<Cow<'a, str>>,
     input_push_token: Option<u8>,
     dismissal_date: Option<u64>,
 }
@@ -176,13 +176,13 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn title(mut self, title: &'a str) -> Self {
-        self.alert.title = Some(title);
+    pub fn title(mut self, title: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.title = Some(title.into());
         self
     }
 
     #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `title` instead")]
-    pub fn set_title(self, title: &'a str) -> Self {
+    pub fn set_title(self, title: impl Into<Cow<'a, str>>) -> Self {
         self.title(title)
     }
 
@@ -239,8 +239,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn subtitle(mut self, subtitle: &'a str) -> Self {
-        self.alert.subtitle = Some(subtitle);
+    pub fn subtitle(mut self, subtitle: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.subtitle = Some(subtitle.into());
         self
     }
 
@@ -248,7 +248,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         since = "0.11.0",
         note = "The builder was made more idiomatic. Use `subtitle` instead"
     )]
-    pub fn set_subtitle(self, subtitle: &'a str) -> Self {
+    pub fn set_subtitle(self, subtitle: impl Into<Cow<'a, str>>) -> Self {
         self.subtitle(subtitle)
     }
 
@@ -268,13 +268,13 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn body(mut self, body: &'a str) -> Self {
-        self.alert.body = Some(body);
+    pub fn body(mut self, body: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.body = Some(body.into());
         self
     }
 
     #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `body` instead")]
-    pub fn set_body(self, body: &'a str) -> Self {
+    pub fn set_body(self, body: impl Into<Cow<'a, str>>) -> Self {
         self.body(body)
     }
 
@@ -321,13 +321,13 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn sound(mut self, sound: &'a str) -> Self {
-        self.sound.name = Some(sound);
+    pub fn sound(mut self, sound: impl Into<Cow<'a, str>>) -> Self {
+        self.sound.name = Some(sound.into());
         self
     }
 
     #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `sound` instead")]
-    pub fn set_sound(self, sound: &'a str) -> Self {
+    pub fn set_sound(self, sound: impl Into<Cow<'a, str>>) -> Self {
         self.sound(sound)
     }
 
@@ -348,8 +348,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn thread_id(mut self, thread_id: &'a str) -> Self {
-        self.thread_id = Some(thread_id);
+    pub fn thread_id(mut self, thread_id: impl Into<Cow<'a, str>>) -> Self {
+        self.thread_id = Some(thread_id.into());
         self
     }
 
@@ -371,8 +371,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn category(mut self, category: &'a str) -> Self {
-        self.category = Some(category);
+    pub fn category(mut self, category: impl Into<Cow<'a, str>>) -> Self {
+        self.category = Some(category.into());
         self
     }
 
@@ -380,7 +380,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         since = "0.11.0",
         note = "The builder was made more idiomatic. Use `category` instead"
     )]
-    pub fn set_category(self, category: &'a str) -> Self {
+    pub fn set_category(self, category: impl Into<Cow<'a, str>>) -> Self {
         self.category(category)
     }
 
@@ -401,8 +401,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn subtitle_loc_key(mut self, key: &'a str) -> Self {
-        self.alert.subtitle_loc_key = Some(key);
+    pub fn subtitle_loc_key(mut self, key: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.subtitle_loc_key = Some(key.into());
         self
     }
 
@@ -450,8 +450,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn title_loc_key(mut self, key: &'a str) -> Self {
-        self.alert.title_loc_key = Some(key);
+    pub fn title_loc_key(mut self, key: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.title_loc_key = Some(key.into());
         self
     }
 
@@ -459,7 +459,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         since = "0.11.0",
         note = "The builder was made more idiomatic. Use `title_loc_key` instead"
     )]
-    pub fn set_title_loc_key(self, key: &'a str) -> Self {
+    pub fn set_title_loc_key(self, key: impl Into<Cow<'a, str>>) -> Self {
         self.title_loc_key(key)
     }
 
@@ -484,7 +484,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     where
         S: Into<Cow<'a, str>> + AsRef<str>,
     {
-        let converted = args.iter().map(|a| a.as_ref().into()).collect();
+        let converted = args.iter().map(AsRef::as_ref).map(Into::into).collect();
 
         self.alert.title_loc_args = Some(converted);
         self
@@ -518,8 +518,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn action_loc_key(mut self, key: &'a str) -> Self {
-        self.alert.action_loc_key = Some(key);
+    pub fn action_loc_key(mut self, key: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.action_loc_key = Some(key.into());
         self
     }
 
@@ -527,7 +527,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         since = "0.11.0",
         note = "The builder was made more idiomatic. Use `action_loc_key` instead"
     )]
-    pub fn set_action_loc_key(self, key: &'a str) -> Self {
+    pub fn set_action_loc_key(self, key: impl Into<Cow<'a, str>>) -> Self {
         self.action_loc_key(key)
     }
 
@@ -548,8 +548,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn loc_key(mut self, key: &'a str) -> Self {
-        self.alert.loc_key = Some(key);
+    pub fn loc_key(mut self, key: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.loc_key = Some(key.into());
         self
     }
 
@@ -557,7 +557,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         since = "0.11.0",
         note = "The builder was made more idiomatic. Use `loc_key` instead"
     )]
-    pub fn set_loc_key(self, key: &'a str) -> Self {
+    pub fn set_loc_key(self, key: impl Into<Cow<'a, str>>) -> Self {
         self.loc_key(key)
     }
 
@@ -616,8 +616,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn launch_image(mut self, image: &'a str) -> Self {
-        self.alert.launch_image = Some(image);
+    pub fn launch_image(mut self, image: impl Into<Cow<'a, str>>) -> Self {
+        self.alert.launch_image = Some(image.into());
         self
     }
 
@@ -625,7 +625,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
         since = "0.11.0",
         note = "The builder was made more idiomatic. Use `launch_image` instead"
     )]
-    pub fn set_launch_image(self, image: &'a str) -> Self {
+    pub fn set_launch_image(self, image: impl Into<Cow<'a, str>>) -> Self {
         self.launch_image(image)
     }
 
@@ -841,8 +841,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn event(mut self, event: &'a str) -> Self {
-        self.event = Some(event);
+    pub fn event(mut self, event: impl Into<Cow<'a, str>>) -> Self {
+        self.event = Some(event.into());
         self
     }
 
@@ -885,8 +885,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn attributes_type(mut self, attributes_type: &'a str) -> Self {
-        self.attributes_type = Some(attributes_type);
+    pub fn attributes_type(mut self, attributes_type: impl Into<Cow<'a, str>>) -> Self {
+        self.attributes_type = Some(attributes_type.into());
         self
     }
 
@@ -929,8 +929,8 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn input_push_channel(mut self, channel_id: &'a str) -> Self {
-        self.input_push_channel = Some(channel_id);
+    pub fn input_push_channel(mut self, channel_id: impl Into<Cow<'a, str>>) -> Self {
+        self.input_push_channel = Some(channel_id.into());
         self
     }
 
@@ -980,7 +980,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
 }
 
 impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
-    fn build(self, device_token: &'a str, options: NotificationOptions<'a>) -> Payload<'a> {
+    fn build(self, device_token: impl Into<Cow<'a, str>>, options: NotificationOptions<'a>) -> Payload<'a> {
         use std::sync::OnceLock;
 
         static DEFAULT_ALERT: OnceLock<DefaultAlert<'static>> = OnceLock::new();
@@ -990,7 +990,7 @@ impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
                 alert: if &self.alert == DEFAULT_ALERT.get_or_init(Default::default) {
                     None
                 } else {
-                    Some(APSAlert::Default(self.alert))
+                    Some(APSAlert::Default(Box::new(self.alert)))
                 },
                 badge: self.badge,
                 sound: if self.sound.critical {
@@ -1013,7 +1013,7 @@ impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
                 input_push_channel: self.input_push_channel,
                 input_push_token: self.input_push_token,
             },
-            device_token,
+            device_token: device_token.into(),
             options,
             data: BTreeMap::new(),
         }
@@ -1062,6 +1062,32 @@ mod tests {
                 },
                 "dismissal-date": 1672531200,
                 "mutable-content": 0
+            }
+        });
+
+        assert_eq!(expected_payload, to_value(payload).unwrap());
+    }
+
+    #[test]
+    fn test_loc_args_inputs() {
+        let owned_strings: Vec<String> = vec!["hello".to_string(), "world".to_string()];
+        let borrowed_strings: Vec<&str> = vec!["foo", "bar"];
+        let slice_strings: &[&str] = &["baz", "qux"];
+        let owned_cows: Vec<Cow<'static, str>> = vec![Cow::Borrowed("narf"), Cow::Owned("derp".to_string())];
+        let builder = DefaultNotificationBuilder::new()
+            .loc_args(&owned_strings)
+            .loc_args(&borrowed_strings)
+            .loc_args(slice_strings)
+            .loc_args(&owned_cows);
+
+        let payload = builder.build("device-token", Default::default());
+
+        let expected_payload = json!({
+            "aps": {
+                "alert": {
+                    "loc-args": ["narf", "derp"],
+                },
+                "mutable-content": 0,
             }
         });
 

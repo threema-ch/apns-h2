@@ -13,7 +13,7 @@ Possible log types:
 
 ### Unreleased
 
-- ...
+- [changed] Replace usage of &'a str with Cow
 
 ### [v0.11.0-alpha.0][v0.11.0-alpha.0] (2026-01-26)
 

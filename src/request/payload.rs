@@ -3,6 +3,7 @@ use crate::error::Error;
 use crate::request::notification::{DefaultAlert, DefaultSound, NotificationOptions, WebPushAlert};
 use erased_serde::Serialize;
 use serde_json::{self, Value};
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 
@@ -14,12 +15,12 @@ pub struct Payload<'a> {
     pub options: NotificationOptions<'a>,
     /// The token for the receiving device
     #[serde(skip)]
-    pub device_token: &'a str,
+    pub device_token: Cow<'a, str>,
     /// The pre-defined notification payload
     pub aps: APS<'a>,
     /// Application specific payload
     #[serde(flatten)]
-    pub data: BTreeMap<&'a str, Value>,
+    pub data: BTreeMap<Cow<'a, str>, Value>,
 }
 
 /// Object that can be serialized to create an APNS request.
@@ -85,8 +86,8 @@ pub trait PayloadLike: serde::Serialize + Debug {
 }
 
 impl<'a> PayloadLike for Payload<'a> {
-    fn get_device_token(&self) -> &'a str {
-        self.device_token
+    fn get_device_token(&self) -> &str {
+        &self.device_token
     }
 
     fn get_options(&self) -> &NotificationOptions<'_> {
@@ -149,8 +150,12 @@ impl<'a> Payload<'a> {
     /// );
     /// }
     /// ```
-    pub fn add_custom_data(&mut self, root_key: &'a str, data: &dyn Serialize) -> Result<&mut Self, Error> {
-        self.data.insert(root_key, serde_json::to_value(data)?);
+    pub fn add_custom_data(
+        &mut self,
+        root_key: impl Into<Cow<'a, str>>,
+        data: &dyn Serialize,
+    ) -> Result<&mut Self, Error> {
+        self.data.insert(root_key.into(), serde_json::to_value(data)?);
 
         Ok(self)
     }
@@ -175,7 +180,7 @@ pub struct APS<'a> {
 
     /// An app-specific identifier for grouping related notifications.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub thread_id: Option<&'a str>,
+    pub thread_id: Option<Cow<'a, str>>,
 
     /// Set to one for silent notifications.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -184,7 +189,7 @@ pub struct APS<'a> {
     /// When a notification includes the category key, the system displays the
     /// actions for that category as buttons in the banner or alert interface.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub category: Option<&'a str>,
+    pub category: Option<Cow<'a, str>>,
 
     /// If set to one, the app can change the notification content before
     /// displaying it to the user.
@@ -201,7 +206,7 @@ pub struct APS<'a> {
     pub dismissal_date: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub url_args: Option<&'a [&'a str]>,
+    pub url_args: Option<Vec<Cow<'a, str>>>,
 
     /// Live Activity: Timestamp for the Live Activity update.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -209,7 +214,7 @@ pub struct APS<'a> {
 
     /// Live Activity: Event type ("start" to begin a Live Activity).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub event: Option<&'a str>,
+    pub event: Option<Cow<'a, str>>,
 
     /// Live Activity: Content state with dynamic data for the Live Activity.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -217,7 +222,7 @@ pub struct APS<'a> {
 
     /// Live Activity: Type of attributes for the Live Activity.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attributes_type: Option<&'a str>,
+    pub attributes_type: Option<Cow<'a, str>>,
 
     /// Live Activity: Attributes data for the Live Activity.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -225,7 +230,7 @@ pub struct APS<'a> {
 
     /// Live Activity: Input push channel ID for iOS 18+ channel-based updates.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub input_push_channel: Option<&'a str>,
+    pub input_push_channel: Option<Cow<'a, str>>,
 
     /// Live Activity: Set to 1 to request a new push token for iOS 18+ token-based updates.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -237,7 +242,7 @@ pub struct APS<'a> {
 #[serde(untagged)]
 pub enum APSAlert<'a> {
     /// A notification that supports all of the iOS features
-    Default(DefaultAlert<'a>),
+    Default(Box<DefaultAlert<'a>>),
     /// Safari web push notification
     WebPush(WebPushAlert<'a>),
 }
@@ -249,7 +254,7 @@ pub enum APSSound<'a> {
     /// A critical notification (supported only on >= iOS 12)
     Critical(DefaultSound<'a>),
     /// Name for a notification sound
-    Sound(&'a str),
+    Sound(Cow<'a, str>),
 }
 
 /// Interruption level for notification delivery and presentation.
