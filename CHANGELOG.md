@@ -30,3 +30,4 @@ Possible log types:
 - [changed] Make `hyper-rustls` use `rustls-platform-verifier`
 - [changed] Change APNs development endpoint to api.sandbox.push.apple.com
 - [changed] Mark `set_` functions on builder as deprecated
+- [added] Support for subtitle-loc-(key|args) in alert

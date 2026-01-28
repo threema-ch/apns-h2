@@ -63,10 +63,19 @@ pub struct DefaultAlert<'a> {
     body: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    launch_image: Option<&'a str>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     title_loc_key: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     title_loc_args: Option<Vec<Cow<'a, str>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    subtitle_loc_key: Option<&'a str>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    subtitle_loc_args: Option<Vec<Cow<'a, str>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     action_loc_key: Option<&'a str>,
@@ -76,9 +85,6 @@ pub struct DefaultAlert<'a> {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     loc_args: Option<Vec<Cow<'a, str>>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    launch_image: Option<&'a str>,
 }
 
 /// A builder to create an APNs payload.
@@ -379,6 +385,57 @@ impl<'a> DefaultNotificationBuilder<'a> {
     )]
     pub fn set_category(self, category: &'a str) -> Self {
         self.category(category)
+    }
+
+    /// The subtitle localization key for the notification title.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .title("a title")
+    ///     .subtitle_loc_key("yolo");
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\",\"subtitle-loc-key\":\"yolo\"},\"mutable-content\":0}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn subtitle_loc_key(mut self, key: &'a str) -> Self {
+        self.alert.subtitle_loc_key = Some(key);
+        self.has_edited_alert = true;
+        self
+    }
+
+    /// Arguments for the title localization.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::PayloadLike;
+    /// # fn main() {
+    /// let mut builder = DefaultNotificationBuilder::new()
+    ///     .title("a title")
+    ///     .subtitle_loc_args(&["fooz", "barz"]);
+    /// let payload = builder.build("token", Default::default());
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"title\":\"a title\",\"subtitle-loc-args\":[\"fooz\",\"barz\"]},\"mutable-content\":0}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn subtitle_loc_args<S>(mut self, args: &'a [S]) -> Self
+    where
+        S: Into<Cow<'a, str>> + AsRef<str>,
+    {
+        let converted = args.iter().map(AsRef::as_ref).map(Into::into).collect();
+
+        self.alert.subtitle_loc_args = Some(converted);
+        self.has_edited_alert = true;
+        self
     }
 
     /// The localization key for the notification title.
