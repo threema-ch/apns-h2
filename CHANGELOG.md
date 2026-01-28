@@ -31,3 +31,4 @@ Possible log types:
 - [changed] Change APNs development endpoint to api.sandbox.push.apple.com
 - [changed] Mark `set_` functions on builder as deprecated
 - [added] Support for subtitle-loc-(key|args) in alert
+- [changed] Remove support for legacy body-only alert notification
