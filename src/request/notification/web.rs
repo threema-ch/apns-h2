@@ -1,5 +1,6 @@
 use crate::request::notification::{NotificationBuilder, NotificationOptions};
 use crate::request::payload::{APS, APSAlert, APSSound, Payload};
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -26,8 +27,8 @@ pub struct WebPushAlert<'a> {
 /// ```
 pub struct WebNotificationBuilder<'a> {
     alert: WebPushAlert<'a>,
-    sound: Option<&'a str>,
-    url_args: &'a [&'a str],
+    sound: Option<Cow<'a, str>>,
+    url_args: Vec<Cow<'a, str>>,
     interruption_level: Option<crate::request::payload::InterruptionLevel>,
     dismissal_date: Option<u64>,
 }
@@ -48,11 +49,14 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn new(alert: WebPushAlert<'a>, url_args: &'a [&'a str]) -> WebNotificationBuilder<'a> {
+    pub fn new<S>(alert: WebPushAlert<'a>, url_args: &'a [S]) -> WebNotificationBuilder<'a>
+    where
+        S: Into<Cow<'a, str>> + AsRef<str>,
+    {
         WebNotificationBuilder {
             alert,
             sound: None,
-            url_args,
+            url_args: url_args.iter().map(AsRef::as_ref).map(Into::into).collect(),
             interruption_level: None,
             dismissal_date: None,
         }
@@ -74,13 +78,13 @@ impl<'a> WebNotificationBuilder<'a> {
     /// );
     /// # }
     /// ```
-    pub fn sound(&mut self, sound: &'a str) -> &mut Self {
-        self.sound = Some(sound);
+    pub fn sound(&mut self, sound: impl Into<Cow<'a, str>>) -> &mut Self {
+        self.sound = Some(sound.into());
         self
     }
 
     #[deprecated(since = "0.11.0", note = "The builder was made more idiomatic. Use `sound` instead")]
-    pub fn set_sound(&mut self, sound: &'a str) -> &mut Self {
+    pub fn set_sound(&mut self, sound: impl Into<Cow<'a, str>>) -> &mut Self {
         self.sound(sound)
     }
 
@@ -266,7 +270,7 @@ impl<'a> WebNotificationBuilder<'a> {
 }
 
 impl<'a> NotificationBuilder<'a> for WebNotificationBuilder<'a> {
-    fn build(self, device_token: &'a str, options: NotificationOptions<'a>) -> Payload<'a> {
+    fn build(self, device_token: impl Into<Cow<'a, str>>, options: NotificationOptions<'a>) -> Payload<'a> {
         Payload {
             aps: APS {
                 alert: Some(APSAlert::WebPush(self.alert)),
@@ -287,7 +291,7 @@ impl<'a> NotificationBuilder<'a> for WebNotificationBuilder<'a> {
                 input_push_channel: None,
                 input_push_token: None,
             },
-            device_token,
+            device_token: device_token.into(),
             options,
             data: BTreeMap::new(),
         }
