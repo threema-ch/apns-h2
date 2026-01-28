@@ -50,7 +50,7 @@ pub struct DefaultSound<'a> {
     volume: Option<f64>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub struct DefaultAlert<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -126,7 +126,6 @@ pub struct DefaultNotificationBuilder<'a> {
     mutable_content: u8,
     content_available: Option<u8>,
     interruption_level: Option<InterruptionLevel>,
-    has_edited_alert: bool,
     timestamp: Option<u64>,
     event: Option<&'a str>,
     content_state: Option<serde_json::Value>,
@@ -179,7 +178,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn title(mut self, title: &'a str) -> Self {
         self.alert.title = Some(title);
-        self.has_edited_alert = true;
         self
     }
 
@@ -243,7 +241,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn subtitle(mut self, subtitle: &'a str) -> Self {
         self.alert.subtitle = Some(subtitle);
-        self.has_edited_alert = true;
         self
     }
 
@@ -266,7 +263,7 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// let payload = builder.build("token", Default::default());
     ///
     /// assert_eq!(
-    ///     "{\"aps\":{\"alert\":\"a body\",\"mutable-content\":0}}",
+    ///     "{\"aps\":{\"alert\":{\"body\":\"a body\"},\"mutable-content\":0}}",
     ///     &payload.to_json_string().unwrap()
     /// );
     /// # }
@@ -406,7 +403,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn subtitle_loc_key(mut self, key: &'a str) -> Self {
         self.alert.subtitle_loc_key = Some(key);
-        self.has_edited_alert = true;
         self
     }
 
@@ -434,7 +430,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
         let converted = args.iter().map(AsRef::as_ref).map(Into::into).collect();
 
         self.alert.subtitle_loc_args = Some(converted);
-        self.has_edited_alert = true;
         self
     }
 
@@ -457,7 +452,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn title_loc_key(mut self, key: &'a str) -> Self {
         self.alert.title_loc_key = Some(key);
-        self.has_edited_alert = true;
         self
     }
 
@@ -493,7 +487,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
         let converted = args.iter().map(|a| a.as_ref().into()).collect();
 
         self.alert.title_loc_args = Some(converted);
-        self.has_edited_alert = true;
         self
     }
 
@@ -527,7 +520,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn action_loc_key(mut self, key: &'a str) -> Self {
         self.alert.action_loc_key = Some(key);
-        self.has_edited_alert = true;
         self
     }
 
@@ -558,7 +550,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn loc_key(mut self, key: &'a str) -> Self {
         self.alert.loc_key = Some(key);
-        self.has_edited_alert = true;
         self
     }
 
@@ -594,7 +585,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
         let converted = args.iter().map(|a| a.as_ref().into()).collect();
 
         self.alert.loc_args = Some(converted);
-        self.has_edited_alert = true;
         self
     }
 
@@ -628,7 +618,6 @@ impl<'a> DefaultNotificationBuilder<'a> {
     /// ```
     pub fn launch_image(mut self, image: &'a str) -> Self {
         self.alert.launch_image = Some(image);
-        self.has_edited_alert = true;
         self
     }
 
@@ -992,11 +981,16 @@ impl<'a> DefaultNotificationBuilder<'a> {
 
 impl<'a> NotificationBuilder<'a> for DefaultNotificationBuilder<'a> {
     fn build(self, device_token: &'a str, options: NotificationOptions<'a>) -> Payload<'a> {
+        use std::sync::OnceLock;
+
+        static DEFAULT_ALERT: OnceLock<DefaultAlert<'static>> = OnceLock::new();
+
         Payload {
             aps: APS {
-                alert: match self.has_edited_alert {
-                    true => Some(APSAlert::Default(self.alert)),
-                    false => self.alert.body.map(APSAlert::Body),
+                alert: if &self.alert == DEFAULT_ALERT.get_or_init(Default::default) {
+                    None
+                } else {
+                    Some(APSAlert::Default(self.alert))
                 },
                 badge: self.badge,
                 sound: if self.sound.critical {
@@ -1208,7 +1202,9 @@ mod tests {
                 }
             },
             "aps": {
-                "alert": "kulli",
+                "alert": {
+                    "body": "kulli"
+                },
                 "mutable-content": 0
             }
         });
