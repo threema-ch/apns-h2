@@ -13,6 +13,10 @@ Possible log types:
 
 ### Unreleased
 
+- ...
+
+### [v0.11.0-alpha.1][v0.11.0-alpha.1] (2026-01-28)
+
 - [changed] Replace usage of &'a str with Cow
 
 ### [v0.11.0-alpha.0][v0.11.0-alpha.0] (2026-01-26)
@@ -37,4 +41,5 @@ Possible log types:
 - [added] Support for subtitle-loc-(key|args) in alert
 - [changed] Remove support for legacy body-only alert notification
 
+[0.11.0-alpha.1]: https://github.com/threema-ch/apns-h2/compare/v0.11.0-alpha.0...v0.11.0-alpha.1
 [0.11.0-alpha.0]: https://github.com/threema-ch/apns-h2/compare/v0.10.0...v0.11.0-alpha.0
