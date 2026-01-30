@@ -13,7 +13,9 @@ Possible log types:
 
 ### Unreleased
 
-- ...
+#### Breaking
+
+- [changed] Change `*_secs` fields to Duration
 
 ### [v0.11.0-alpha.1][v0.11.0-alpha.1] (2026-01-28)
 

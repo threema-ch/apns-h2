@@ -22,7 +22,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::{fmt, io};
 
-const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 20;
+const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(20);
 
 type HyperConnector = HttpsConnector<HttpConnector>;
 
@@ -67,10 +67,10 @@ pub struct ClientConfig {
     /// The endpoint where the requests are sent to
     pub endpoint: Endpoint,
     /// The timeout of the HTTP requests
-    pub request_timeout_secs: Option<u64>,
+    pub request_timeout: Option<Duration>,
     /// The timeout for idle sockets being kept alive
-    pub pool_idle_timeout_secs: Option<u64>,
-    pub http2_keep_alive_interval_secs: Option<u64>,
+    pub pool_idle_timeout: Option<Duration>,
+    pub http2_keep_alive_interval: Option<Duration>,
     pub http2_keep_alive_while_idle: bool,
 }
 
@@ -78,11 +78,11 @@ impl Default for ClientConfig {
     fn default() -> Self {
         Self {
             endpoint: Endpoint::Production,
-            request_timeout_secs: Some(DEFAULT_REQUEST_TIMEOUT_SECS),
-            pool_idle_timeout_secs: None,
+            request_timeout: Some(DEFAULT_REQUEST_TIMEOUT),
+            pool_idle_timeout: None,
             // Send HTTP/2 PING every 1 hour as per: https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns#Follow-best-practices-while-sending-push-notifications-with-APNs
             // Reuse a connection as long as possible. In most cases, you can reuse a connection for many hours to days. If your connection is mostly idle, you may send a HTTP2 PING frame after an hour of inactivity. Reusing a connection often results in less bandwidth and CPU consumption.
-            http2_keep_alive_interval_secs: Some(60 * 60),
+            http2_keep_alive_interval: Some(Duration::from_secs(60 * 60)),
             http2_keep_alive_while_idle: true,
         }
     }
@@ -125,9 +125,9 @@ impl ClientBuilder {
             config:
                 ClientConfig {
                     endpoint,
-                    request_timeout_secs,
-                    pool_idle_timeout_secs,
-                    http2_keep_alive_interval_secs,
+                    request_timeout,
+                    pool_idle_timeout,
+                    http2_keep_alive_interval,
                     http2_keep_alive_while_idle,
                 },
             signer,
@@ -141,16 +141,16 @@ impl ClientBuilder {
         };
 
         let http_client = HttpClient::builder(TokioExecutor::new())
-            .pool_idle_timeout(pool_idle_timeout_secs.map(Duration::from_secs))
+            .pool_idle_timeout(pool_idle_timeout)
             .http2_only(true)
-            .http2_keep_alive_interval(http2_keep_alive_interval_secs.map(Duration::from_secs))
+            .http2_keep_alive_interval(http2_keep_alive_interval)
             .http2_keep_alive_while_idle(http2_keep_alive_while_idle)
             .timer(TokioTimer::new())
             .build(connector);
 
         Ok(Client {
             http_client,
-            options: ConnectionOptions::new(endpoint, signer, request_timeout_secs),
+            options: ConnectionOptions::new(endpoint, signer, request_timeout),
         })
     }
 }
@@ -163,8 +163,8 @@ struct ConnectionOptions {
 }
 
 impl ConnectionOptions {
-    fn new(endpoint: Endpoint, signer: Option<Signer>, request_timeout_secs: Option<u64>) -> Self {
-        let request_timeout = Duration::from_secs(request_timeout_secs.unwrap_or(DEFAULT_REQUEST_TIMEOUT_SECS));
+    fn new(endpoint: Endpoint, signer: Option<Signer>, request_timeout: Option<Duration>) -> Self {
+        let request_timeout = request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT);
         Self {
             endpoint,
             request_timeout,
