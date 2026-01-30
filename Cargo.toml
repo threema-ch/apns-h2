@@ -58,4 +58,4 @@ tracing-subscriber = "0.3"
 default = ["ring"]
 openssl = ["dep:openssl", "rustls-openssl"]
 ring = ["dep:ring", "hyper-rustls/ring", "p12-keystore", "pem", "rustls/ring"]
-tracing = ["dep:tracing"]
+tracing = ["dep:tracing", "tokio/tracing"]
