@@ -13,6 +13,10 @@ Possible log types:
 
 ### Unreleased
 
+- ...
+
+### [v0.11.0-alpha.2][v0.11.0-alpha.2] (2026-02-02)
+
 #### Breaking
 
 - [changed] Change `*_secs` fields to Duration
@@ -43,5 +47,6 @@ Possible log types:
 - [added] Support for subtitle-loc-(key|args) in alert
 - [changed] Remove support for legacy body-only alert notification
 
+[v0.11.0-alpha.2]: https://github.com/threema-ch/apns-h2/compare/v0.11.0-alpha.1...v0.11.0-alpha.2
 [v0.11.0-alpha.1]: https://github.com/threema-ch/apns-h2/compare/v0.11.0-alpha.0...v0.11.0-alpha.1
 [v0.11.0-alpha.0]: https://github.com/threema-ch/apns-h2/compare/v0.10.0...v0.11.0-alpha.0
