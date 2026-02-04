@@ -13,7 +13,10 @@ Possible log types:
 
 ### Unreleased
 
-- ...
+#### Breaking
+
+- [changed] Make aws-lc-rs the default crypto provider</br>
+  Since ring is only [experimental](https://github.com/briansmith/ring/blob/409bd9c/README.md), it is not encouraged to use it in production
 
 ### [v0.11.0-alpha.2][v0.11.0-alpha.2] (2026-02-02)
 

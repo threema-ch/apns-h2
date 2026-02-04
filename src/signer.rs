@@ -1,19 +1,19 @@
 use crate::error::Error;
+#[cfg(feature = "aws-lc-rs")]
+use aws_lc_rs::{rand, signature};
 use parking_lot::RwLock;
 use std::io::Read;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use base64::prelude::*;
-#[cfg(all(not(feature = "ring"), feature = "openssl"))]
+#[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
 use openssl::{
     ec::EcKey,
     hash::MessageDigest,
     pkey::{PKey, Private},
     sign::Signer as SslSigner,
 };
-#[cfg(feature = "ring")]
-use ring::{rand, signature};
 use thiserror::Error;
 
 #[derive(Debug, Clone)]
@@ -52,30 +52,26 @@ struct JwtPayload<'a> {
 
 #[derive(Debug)]
 enum Secret {
-    #[cfg(all(not(feature = "ring"), feature = "openssl"))]
+    #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
     OpenSSL(PKey<Private>),
-    #[cfg(feature = "ring")]
-    Ring {
-        signing_key: signature::EcdsaKeyPair,
-        rng: rand::SystemRandom,
-    },
+    #[cfg(feature = "aws-lc-rs")]
+    AwsLc(signature::EcdsaKeyPair),
 }
 
 impl Secret {
-    #[cfg(all(not(feature = "ring"), feature = "openssl"))]
+    #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
     fn new_openssl(pem_key: &[u8]) -> Result<Self, Error> {
         let ec_key = EcKey::private_key_from_pem(pem_key)?;
         let secret = PKey::from_ec_key(ec_key)?;
         Ok(Self::OpenSSL(secret))
     }
 
-    #[cfg(feature = "ring")]
+    #[cfg(feature = "aws-lc-rs")]
     fn new_ring(pem_key: &[u8]) -> Result<Self, Error> {
         let der = pem::parse(pem_key).map_err(SignerError::Pem)?;
         let alg = &signature::ECDSA_P256_SHA256_FIXED_SIGNING;
-        let rng = rand::SystemRandom::new();
-        let signing_key = signature::EcdsaKeyPair::from_pkcs8(alg, der.contents(), &rng)?;
-        Ok(Self::Ring { signing_key, rng })
+        let signing_key = signature::EcdsaKeyPair::from_pkcs8(alg, der.contents())?;
+        Ok(Self::AwsLc(signing_key))
     }
 
     fn from_pem<R>(mut pk_pem: R) -> Result<Secret, Error>
@@ -84,11 +80,11 @@ impl Secret {
     {
         let mut pem_key: Vec<u8> = Vec::new();
         pk_pem.read_to_end(&mut pem_key)?;
-        #[cfg(all(not(feature = "ring"), feature = "openssl"))]
+        #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
         {
             Self::new_openssl(&pem_key)
         }
-        #[cfg(feature = "ring")]
+        #[cfg(feature = "aws-lc-rs")]
         {
             Self::new_ring(&pem_key)
         }
@@ -209,16 +205,17 @@ impl Signer {
 impl Secret {
     fn sign(&self, signing_input: &String) -> Result<Vec<u8>, SignerError> {
         match self {
-            #[cfg(all(not(feature = "ring"), feature = "openssl"))]
+            #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
             Secret::OpenSSL(key) => {
                 let mut signer = SslSigner::new(MessageDigest::sha256(), key)?;
                 signer.update(signing_input.as_bytes())?;
                 let signature_payload = signer.sign_to_vec()?;
                 Ok(signature_payload)
             }
-            #[cfg(feature = "ring")]
-            Secret::Ring { signing_key, rng } => {
-                let signature_payload = signing_key.sign(rng, signing_input.as_bytes())?;
+            #[cfg(feature = "aws-lc-rs")]
+            Secret::AwsLc(signing_key) => {
+                let rng = rand::SystemRandom::new();
+                let signature_payload = signing_key.sign(&rng, signing_input.as_bytes())?;
                 Ok(signature_payload.as_ref().to_vec())
             }
         }
@@ -228,15 +225,15 @@ impl Secret {
 /// Failed to sign payload
 #[derive(Debug, Error)]
 pub enum SignerError {
-    #[cfg(all(not(feature = "ring"), feature = "openssl"))]
+    #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
     #[error(transparent)]
     OpenSSL(#[from] openssl::error::ErrorStack),
-    #[cfg(feature = "ring")]
+    #[cfg(feature = "aws-lc-rs")]
     #[error(transparent)]
     Pem(#[from] pem::PemError),
-    #[cfg(feature = "ring")]
+    #[cfg(feature = "aws-lc-rs")]
     #[error(transparent)]
-    Ring(#[from] ring::error::Unspecified),
+    Ring(#[from] aws_lc_rs::error::Unspecified),
 }
 
 fn get_time() -> i64 {
