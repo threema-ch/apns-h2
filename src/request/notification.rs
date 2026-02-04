@@ -11,6 +11,9 @@ use crate::request::payload::Payload;
 
 pub trait NotificationBuilder<'a> {
     /// Generates the request payload to be send with the `Client`.
-    fn build(self, device_token: impl Into<std::borrow::Cow<'a, str>>, options: NotificationOptions<'a>)
-    -> Payload<'a>;
+    fn build(
+        self,
+        device_token: impl Into<std::borrow::Cow<'a, str>>,
+        options: NotificationOptions<'a>,
+    ) -> Payload<'a>;
 }

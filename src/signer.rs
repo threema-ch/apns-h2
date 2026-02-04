@@ -147,7 +147,12 @@ impl Signer {
         Ok(f(&signature.key))
     }
 
-    fn create_signature(secret: &Secret, key_id: &str, team_id: &str, issued_at: i64) -> Result<String, Error> {
+    fn create_signature(
+        secret: &Secret,
+        key_id: &str,
+        team_id: &str,
+        issued_at: i64,
+    ) -> Result<String, Error> {
         let headers = JwtHeader {
             alg: JwtAlg::ES256,
             kid: key_id,

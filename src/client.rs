@@ -186,7 +186,10 @@ impl Client {
         R: Read,
     {
         #[cfg(feature = "aws-lc-rs")]
-        fn create_connector(certificate_bytes: &[u8], password: &str) -> Result<HttpsConnector<HttpConnector>, Error> {
+        fn create_connector(
+            certificate_bytes: &[u8],
+            password: &str,
+        ) -> Result<HttpsConnector<HttpConnector>, Error> {
             // Parse the PKCS#12 archive into PEM-encoded certificate chain and private key
             let (cert_pem, key_pem) = crate::pkcs12::parse_pkcs12(certificate_bytes, password)?;
             // Build a TLS connector using the parsed certificate and key PEM blocks
@@ -195,7 +198,10 @@ impl Client {
         }
 
         #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
-        fn create_connector(certificate_bytes: &[u8], password: &str) -> Result<HttpsConnector<HttpConnector>, Error> {
+        fn create_connector(
+            certificate_bytes: &[u8],
+            password: &str,
+        ) -> Result<HttpsConnector<HttpConnector>, Error> {
             let pkcs = openssl::pkcs12::Pkcs12::from_der(certificate_bytes)?.parse2(password)?;
             let Some((cert, pkey)) = pkcs.cert.zip(pkcs.pkey) else {
                 return Err(Error::InvalidCertificate);
@@ -256,7 +262,10 @@ impl Client {
         let header_map = response.headers();
 
         fn get_header_key_opt(header_map: &http::HeaderMap, key: &'static str) -> Option<String> {
-            header_map.get(key).and_then(|s| s.to_str().ok()).map(String::from)
+            header_map
+                .get(key)
+                .and_then(|s| s.to_str().ok())
+                .map(String::from)
         }
 
         let apns_id = get_header_key_opt(header_map, "apns-id");
@@ -287,7 +296,10 @@ impl Client {
         }
     }
 
-    fn build_request<T: PayloadLike>(&self, payload: T) -> Result<hyper::Request<BoxBody<Bytes, Infallible>>, Error> {
+    fn build_request<T: PayloadLike>(
+        &self,
+        payload: T,
+    ) -> Result<hyper::Request<BoxBody<Bytes, Infallible>>, Error> {
         let path = format!(
             "https://{}/3/device/{}",
             self.options.endpoint,
@@ -349,8 +361,8 @@ fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
 
 /// Create a [`rustls::ConfigBuilder`] with the provider preset and platform
 /// verifier enabled
-fn client_config_builder() -> Result<rustls::ConfigBuilder<rustls::ClientConfig, rustls::client::WantsClientCert>, Error>
-{
+fn client_config_builder()
+-> Result<rustls::ConfigBuilder<rustls::ClientConfig, rustls::client::WantsClientCert>, Error> {
     use hyper_rustls::ConfigBuilderExt as _;
     // Allow setting a runtime default crypto provider, otherwise use the
     // default.

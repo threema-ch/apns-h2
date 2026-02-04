@@ -351,16 +351,13 @@ mod tests {
         // Verify all Live Activity fields are correctly serialized
         assert!(json_str.contains("\"timestamp\":1234"));
         assert!(json_str.contains("\"event\":\"start\""));
-        assert!(
-            json_str.contains(
-                "\"content-state\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"
-            )
-        );
+        assert!(json_str.contains(
+            "\"content-state\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"
+        ));
         assert!(json_str.contains("\"attributes-type\":\"AdventureAttributes\""));
-        assert!(
-            json_str
-                .contains("\"attributes\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}")
-        );
+        assert!(json_str.contains(
+            "\"attributes\":{\"currentHealthLevel\":100,\"eventDescription\":\"Adventure has begun!\"}"
+        ));
 
         // Test iOS 18 channel-based Live Activity
         let builder = DefaultNotificationBuilder::new()
