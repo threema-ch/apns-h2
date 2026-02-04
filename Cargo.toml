@@ -12,6 +12,7 @@ license = "MIT"
 keywords = ["apns", "apple", "async", "http2", "push"]
 
 [dependencies]
+aws-lc-rs = { version = "1.15.4", optional = true }
 base64 = "0.22"
 erased-serde = "0.4"
 http = "1.0"
@@ -35,7 +36,6 @@ openssl = { version = "0.10", optional = true }
 p12-keystore = { version = "0.2.0", optional = true }
 parking_lot = "0.12"
 pem = { version = "3.0", optional = true }
-ring = { version = "0.17", features = ["std"], optional = true }
 rustls = { version = "0.23", default-features = false, features = [
     "logging",
     "std",
@@ -55,7 +55,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tracing-subscriber = "0.3"
 
 [features]
-default = ["ring"]
+default = ["aws-lc-rs"]
 openssl = ["dep:openssl", "rustls-openssl"]
-ring = ["dep:ring", "hyper-rustls/ring", "p12-keystore", "pem", "rustls/ring"]
+aws-lc-rs = ["dep:aws-lc-rs", "hyper-rustls/aws-lc-rs", "p12-keystore", "pem", "rustls/aws-lc-rs"]
 tracing = ["dep:tracing", "tokio/tracing"]

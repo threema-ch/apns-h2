@@ -60,7 +60,7 @@
 //!
 //! ```no_run
 //! #[macro_use] extern crate serde;
-//! # #[cfg(all(feature = "openssl", not(feature = "ring")))]
+//! # #[cfg(all(feature = "openssl", not(feature = "aws-lc-rs")))]
 //! # {
 //!
 //! use apns_h2::{
@@ -108,7 +108,7 @@
 //! ```
 #![warn(clippy::unwrap_used)]
 
-#[cfg(not(any(feature = "openssl", feature = "ring")))]
+#[cfg(not(any(feature = "openssl", feature = "aws-lc-rs")))]
 compile_error!("either feature \"openssl\" or feature \"ring\" has to be enabled");
 
 #[macro_use]
@@ -120,7 +120,7 @@ extern crate serde_json;
 
 pub mod client;
 pub mod error;
-#[cfg(feature = "ring")]
+#[cfg(feature = "aws-lc-rs")]
 mod pkcs12;
 pub mod request;
 pub mod response;

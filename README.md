@@ -24,7 +24,7 @@ Needs a Tokio executor version 1.0 or later and Rust compiler version 1.85.0 or 
 * If using authentication tokens, handles signature renewing for Apple's guidelines
   and caching for maximum performance.
 * Cryptography primitives are provided either by openssl or
-  [ring](https://github.com/briansmith/ring).
+  [AWS-LC](https://github.com/aws/aws-lc).
 
 ## Examples
 

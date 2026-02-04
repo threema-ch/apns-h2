@@ -185,7 +185,7 @@ impl Client {
     where
         R: Read,
     {
-        #[cfg(feature = "ring")]
+        #[cfg(feature = "aws-lc-rs")]
         fn create_connector(certificate_bytes: &[u8], password: &str) -> Result<HttpsConnector<HttpConnector>, Error> {
             // Parse the PKCS#12 archive into PEM-encoded certificate chain and private key
             let (cert_pem, key_pem) = crate::pkcs12::parse_pkcs12(certificate_bytes, password)?;
@@ -194,7 +194,7 @@ impl Client {
             client_cert_connector(&cert_pem, &key_pem)
         }
 
-        #[cfg(all(not(feature = "ring"), feature = "openssl"))]
+        #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
         fn create_connector(certificate_bytes: &[u8], password: &str) -> Result<HttpsConnector<HttpConnector>, Error> {
             let pkcs = openssl::pkcs12::Pkcs12::from_der(certificate_bytes)?.parse2(password)?;
             let Some((cert, pkey)) = pkcs.cert.zip(pkcs.pkey) else {
@@ -332,17 +332,17 @@ impl Client {
     }
 }
 
-#[cfg(feature = "ring")]
+#[cfg(feature = "aws-lc-rs")]
 fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
-    Arc::new(rustls::crypto::ring::default_provider())
+    Arc::new(rustls::crypto::aws_lc_rs::default_provider())
 }
 
-#[cfg(all(not(feature = "ring"), feature = "openssl"))]
+#[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
 fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
     Arc::new(rustls_openssl::default_provider())
 }
 
-#[cfg(all(not(feature = "ring"), not(feature = "openssl")))]
+#[cfg(all(not(feature = "aws-lc-rs"), not(feature = "openssl")))]
 fn default_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
     panic!("No provider set");
 }
