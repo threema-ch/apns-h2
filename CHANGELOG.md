@@ -13,6 +13,10 @@ Possible log types:
 
 ### Unreleased
 
+- ...
+
+### [v0.11.0-alpha.3][v0.11.0-alpha.3] (2026-02-04)
+
 #### Breaking
 
 - [changed] Make aws-lc-rs the default crypto provider</br>
@@ -50,6 +54,7 @@ Possible log types:
 - [added] Support for subtitle-loc-(key|args) in alert
 - [changed] Remove support for legacy body-only alert notification
 
+[v0.11.0-alpha.3]: https://github.com/threema-ch/apns-h2/compare/v0.11.0-alpha.2...v0.11.0-alpha.3
 [v0.11.0-alpha.2]: https://github.com/threema-ch/apns-h2/compare/v0.11.0-alpha.1...v0.11.0-alpha.2
 [v0.11.0-alpha.1]: https://github.com/threema-ch/apns-h2/compare/v0.11.0-alpha.0...v0.11.0-alpha.1
 [v0.11.0-alpha.0]: https://github.com/threema-ch/apns-h2/compare/v0.10.0...v0.11.0-alpha.0
