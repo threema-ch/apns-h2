@@ -168,7 +168,9 @@ impl fmt::Display for ErrorReason {
             ErrorReason::TopicDisallowed => "Pushing to this topic is not allowed.",
             ErrorReason::BadCertificate => "The certificate was bad.",
             ErrorReason::BadCertificateEnvironment => "The client certificate was for the wrong environment.",
-            ErrorReason::ExpiredProviderToken => "The provider token is stale and a new token should be generated.",
+            ErrorReason::ExpiredProviderToken => {
+                "The provider token is stale and a new token should be generated."
+            }
             ErrorReason::Forbidden => "The specified action is not allowed.",
             ErrorReason::InvalidProviderToken => {
                 "The provider token is not valid or the token signature could not be verified."
@@ -190,7 +192,9 @@ impl fmt::Display for ErrorReason {
             }
             ErrorReason::PayloadTooLarge => "The message payload was too large (4096 bytes)",
             ErrorReason::TooManyProviderTokenUpdates => "The provider token is being updated too often.",
-            ErrorReason::TooManyRequests => "Too many requests were made consecutively to the same device token.",
+            ErrorReason::TooManyRequests => {
+                "Too many requests were made consecutively to the same device token."
+            }
             ErrorReason::InternalServerError => "An internal server error occurred.",
             ErrorReason::ServiceUnavailable => "The service is unavailable.",
             ErrorReason::Shutdown => "The server is shutting down.",
@@ -214,7 +218,11 @@ mod tests {
             (ErrorReason::BadMessageId, "BadMessageId", None),
             (ErrorReason::BadPriority, "BadPriority", None),
             (ErrorReason::BadTopic, "BadTopic", None),
-            (ErrorReason::DeviceTokenNotForTopic, "DeviceTokenNotForTopic", None),
+            (
+                ErrorReason::DeviceTokenNotForTopic,
+                "DeviceTokenNotForTopic",
+                None,
+            ),
             (ErrorReason::DuplicateHeaders, "DuplicateHeaders", None),
             (ErrorReason::IdleTimeout, "IdleTimeout", None),
             (ErrorReason::InvalidPushType, "InvalidPushType", None),

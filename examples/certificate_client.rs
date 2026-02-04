@@ -16,16 +16,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     {
         let mut ap = ArgumentParser::new();
         ap.set_description("APNs certificate-based push");
-        ap.refer(&mut certificate_file)
-            .add_option(&["-c", "--certificate"], Store, "Certificate PKCS12 file location");
+        ap.refer(&mut certificate_file).add_option(
+            &["-c", "--certificate"],
+            Store,
+            "Certificate PKCS12 file location",
+        );
         ap.refer(&mut password)
             .add_option(&["-p", "--password"], Store, "Certificate password");
         ap.refer(&mut device_token)
             .add_option(&["-d", "--device_token"], Store, "APNs device token");
         ap.refer(&mut message)
             .add_option(&["-m", "--message"], Store, "Notification message");
-        ap.refer(&mut sandbox)
-            .add_option(&["-s", "--sandbox"], StoreTrue, "Use the development APNs servers");
+        ap.refer(&mut sandbox).add_option(
+            &["-s", "--sandbox"],
+            StoreTrue,
+            "Use the development APNs servers",
+        );
         ap.refer(&mut topic)
             .add_option(&["-o", "--topic"], StoreOption, "APNS topic");
         ap.parse_args_or_exit();

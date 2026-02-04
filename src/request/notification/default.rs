@@ -276,7 +276,10 @@ impl<'a> DefaultNotificationBuilder<'a> {
         self
     }
 
-    #[deprecated(since = "0.11.0", note = "Use the idiomatic `body` instead of the legacy `set_*` fn")]
+    #[deprecated(
+        since = "0.11.0",
+        note = "Use the idiomatic `body` instead of the legacy `set_*` fn"
+    )]
     pub fn set_body(self, body: impl Into<Cow<'a, str>>) -> Self {
         self.body(body)
     }
