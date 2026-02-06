@@ -67,7 +67,7 @@ impl Secret {
     }
 
     #[cfg(feature = "aws-lc-rs")]
-    fn new_ring(pem_key: &[u8]) -> Result<Self, Error> {
+    fn new_aws_lc_rs(pem_key: &[u8]) -> Result<Self, Error> {
         let der = pem::parse(pem_key).map_err(SignerError::Pem)?;
         let alg = &signature::ECDSA_P256_SHA256_FIXED_SIGNING;
         let signing_key = signature::EcdsaKeyPair::from_pkcs8(alg, der.contents())?;
@@ -86,7 +86,7 @@ impl Secret {
         }
         #[cfg(feature = "aws-lc-rs")]
         {
-            Self::new_ring(&pem_key)
+            Self::new_aws_lc_rs(&pem_key)
         }
     }
 }
@@ -294,5 +294,18 @@ jDwmlD1Gg0yJt1e38djFwsxsfr5q2hv0Rj9fTEqAPr8H7mGm0wKxZ7iQ
         signer.with_signature(|sig| sig2.push_str(sig)).unwrap();
 
         assert_ne!(sig1, sig2);
+    }
+
+    #[test]
+    fn test_new_secret() {
+        use p256::{ecdsa::SigningKey, elliptic_curve::rand_core::OsRng as p256_OsRng};
+        use pkcs8::EncodePrivateKey;
+
+        let key = {
+            let signing_key = SigningKey::random(&mut p256_OsRng);
+            signing_key.to_pkcs8_pem(pkcs8::LineEnding::LF).unwrap()
+        };
+
+        Secret::from_pem(key.as_bytes()).unwrap();
     }
 }
