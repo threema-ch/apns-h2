@@ -87,6 +87,15 @@ pub struct DefaultAlert<'a> {
     loc_args: Option<Vec<Cow<'a, str>>>,
 }
 
+impl<'a> DefaultAlert<'a> {
+    pub(crate) fn body_only(body: Cow<'a, str>) -> Self {
+        DefaultAlert::<'_> {
+            body: Some(body),
+            ..Default::default()
+        }
+    }
+}
+
 /// A builder to create an APNs payload.
 ///
 /// # Example

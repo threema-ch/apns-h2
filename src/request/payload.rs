@@ -245,6 +245,38 @@ pub enum APSAlert<'a> {
     Default(Box<DefaultAlert<'a>>),
     /// Safari web push notification
     WebPush(WebPushAlert<'a>),
+    /// A notification with just a body
+    #[deprecated(since = "0.11.0", note = "Use `APSAlert::body_only(body)`")]
+    Body(Cow<'a, str>),
+}
+
+impl<'a> APSAlert<'a> {
+    /// Creates an alert with only the body set.
+    ///
+    /// ```rust
+    /// # use apns_h2::request::notification::{DefaultNotificationBuilder, NotificationBuilder};
+    /// # use apns_h2::request::payload::{APSAlert, APS, Payload, PayloadLike};
+    /// # fn main() {
+    /// let alert = APSAlert::body_only("another body");
+    /// let payload = Payload {
+    ///     device_token: "token".into(),
+    ///     aps: APS {
+    ///         alert: Some(alert),
+    ///         ..Default::default()
+    ///     },
+    ///     options: Default::default(),
+    ///     data: Default::default(),
+    /// };
+    ///
+    /// assert_eq!(
+    ///     "{\"aps\":{\"alert\":{\"body\":\"another body\"}}}",
+    ///     &payload.to_json_string().unwrap()
+    /// );
+    /// # }
+    /// ```
+    pub fn body_only(body: impl Into<Cow<'a, str>>) -> Self {
+        APSAlert::Default(Box::new(DefaultAlert::body_only(body.into())))
+    }
 }
 
 /// Different notification sound types.
