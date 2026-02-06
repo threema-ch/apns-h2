@@ -13,7 +13,8 @@ Possible log types:
 
 ### Unreleased
 
-- ...
+- [changed] Reintroduce support for legacy body-only alert notification, but
+  mark it as deprecated.
 
 ### [v0.11.0-alpha.3][v0.11.0-alpha.3] (2026-02-04)
 
