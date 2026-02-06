@@ -60,41 +60,30 @@ enum Secret {
 
 impl Secret {
     #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
-    fn new_openssl(pem_key: &[u8]) -> Result<Self, Error> {
-        let ec_key = EcKey::private_key_from_pem(pem_key)?;
+    fn from_pem(pk_pem_data: &[u8]) -> Result<Secret, Error> {
+        let ec_key = EcKey::private_key_from_pem(pk_pem_data)?;
         let secret = PKey::from_ec_key(ec_key)?;
         Ok(Self::OpenSSL(secret))
     }
 
     #[cfg(feature = "aws-lc-rs")]
-    fn new_aws_lc_rs(pem_key: &[u8]) -> Result<Self, Error> {
-        let der = pem::parse(pem_key).map_err(SignerError::Pem)?;
+    fn from_pem(pk_pem_data: &[u8]) -> Result<Secret, Error> {
+        let der = pem::parse(pk_pem_data).map_err(SignerError::Pem)?;
         let alg = &signature::ECDSA_P256_SHA256_FIXED_SIGNING;
         let signing_key = signature::EcdsaKeyPair::from_pkcs8(alg, der.contents())?;
         Ok(Self::AwsLc(signing_key))
-    }
-
-    fn from_pem<R>(mut pk_pem: R) -> Result<Secret, Error>
-    where
-        R: Read,
-    {
-        let mut pem_key: Vec<u8> = Vec::new();
-        pk_pem.read_to_end(&mut pem_key)?;
-        #[cfg(all(not(feature = "aws-lc-rs"), feature = "openssl"))]
-        {
-            Self::new_openssl(&pem_key)
-        }
-        #[cfg(feature = "aws-lc-rs")]
-        {
-            Self::new_aws_lc_rs(&pem_key)
-        }
     }
 }
 
 impl Signer {
     /// Creates a signer with a pkcs8 private key, APNs key id and team id.
     /// Can fail if the key is not valid or there is a problem with system OpenSSL.
-    pub fn new<S, T, R>(pk_pem: R, key_id: S, team_id: T, signature_ttl: Duration) -> Result<Signer, Error>
+    pub fn new<S, T, R>(
+        mut pk_pem: R,
+        key_id: S,
+        team_id: T,
+        signature_ttl: Duration,
+    ) -> Result<Signer, Error>
     where
         S: Into<String>,
         T: Into<String>,
@@ -103,7 +92,11 @@ impl Signer {
         let key_id: String = key_id.into();
         let team_id: String = team_id.into();
 
-        let secret = Secret::from_pem(pk_pem)?;
+        let secret = {
+            let mut pk_pem_data: Vec<u8> = Vec::new();
+            pk_pem.read_to_end(&mut pk_pem_data)?;
+            Secret::from_pem(&pk_pem_data)?
+        };
 
         let issued_at = get_time();
         let signature = RwLock::new(Signature {
