@@ -2,7 +2,7 @@
 name = "apns-h2"
 version = "0.11.0-alpha.3"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Async HTTP/2 APNs client based on hyper"
 documentation = "https://docs.rs/apns-h2"
 readme = "README.md"
