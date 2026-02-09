@@ -15,6 +15,7 @@ Possible log types:
 
 - [changed] Reintroduce support for legacy body-only alert notification, but
   mark it as deprecated.
+- [changed] Set msrv to 1.88 to allow usage of `time@0.3.47` which fixes [RUSTSEC-2026-0009](https://rustsec.org/advisories/RUSTSEC-2026-0009)
 
 ### [v0.11.0-alpha.3][v0.11.0-alpha.3] (2026-02-04)
 
