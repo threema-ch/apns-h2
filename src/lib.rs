@@ -36,10 +36,10 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 //! let mut builder = DefaultNotificationBuilder::new()
-//!     .set_body("Hi there")
-//!     .set_badge(420)
-//!     .set_category("cat1")
-//!     .set_sound("ping.flac");
+//!     .body("Hi there")
+//!     .badge(420)
+//!     .category("cat1")
+//!     .sound("ping.flac");
 //!
 //! let payload = builder.build("device-token-from-the-user", Default::default());
 //! let mut file = File::open("/path/to/private_key.p8")?;
@@ -83,7 +83,7 @@
 //!     };
 //!
 //!     let mut payload = DefaultNotificationBuilder::new()
-//!         .set_content_available()
+//!         .content_available()
 //!         .build("device-token-from-the-user",
 //!         NotificationOptions {
 //!             apns_priority: Some(Priority::Normal),
