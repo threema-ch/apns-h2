@@ -2,8 +2,8 @@
 
 [![CI Status](https://github.com/threema-ch/apns-h2/actions/workflows/ci.yml/badge.svg)](https://github.com/threema-ch/apns-h2/actions/workflows/ci.yml)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![crates.io](https://img.shields.io/crates/v/apns-h2)](https://crates.io/crates/apns-h2)
-[![docs.rs](https://img.shields.io/badge/docs.rs-apns-h2)](https://docs.rs/apns-h2/)
+[![crates.io](https://img.shields.io/crates/v/apns-h2?logo=rust&labelColor=94670e)](https://crates.io/crates/apns-h2)
+[![docs.rs](https://img.shields.io/badge/docs.rs-apns--h2-0e9062?labelColor=0f1419&logo=docs.rs)](https://docs.rs/apns-h2/)
 
 Async HTTP/2 APNs client based on hyper.
 
