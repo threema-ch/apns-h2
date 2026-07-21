@@ -112,7 +112,7 @@ pub enum ErrorReason {
     UnrelatedKeyIdInToken,
 
     /// The key ID in the provider token doesn’t match the environment.
-    BadEnvironmentKeyIdInToken,
+    BadEnvironmentKeyInToken,
 
     /// The request contained an invalid :path value.
     BadPath,
@@ -143,6 +143,13 @@ pub enum ErrorReason {
 
     /// The APNs server is shutting down.
     Shutdown,
+
+    /// A reason string returned by APNs that this version of the crate does not
+    /// recognize. Without this catch-all, deserializing an unknown reason fails
+    /// the whole body parse and the reason is lost (`Response::error` becomes
+    /// `None`), hiding real errors such as newly introduced or renamed reasons.
+    #[serde(other)]
+    Unknown,
 }
 
 impl fmt::Display for ErrorReason {
@@ -181,7 +188,7 @@ impl fmt::Display for ErrorReason {
             ErrorReason::UnrelatedKeyIdInToken => {
                 "The key ID in the provider token isn't related to the key ID of the token used in the first push of this connection."
             }
-            ErrorReason::BadEnvironmentKeyIdInToken => {
+            ErrorReason::BadEnvironmentKeyInToken => {
                 "The key ID in the provider token doesn't match the environment."
             }
             ErrorReason::BadPath => "The request path value is bad.",
@@ -198,6 +205,7 @@ impl fmt::Display for ErrorReason {
             ErrorReason::InternalServerError => "An internal server error occurred.",
             ErrorReason::ServiceUnavailable => "The service is unavailable.",
             ErrorReason::Shutdown => "The server is shutting down.",
+            ErrorReason::Unknown => "An unrecognized reason was returned by APNs.",
         };
 
         f.write_str(s)
@@ -242,8 +250,8 @@ mod tests {
             (ErrorReason::MissingProviderToken, "MissingProviderToken", None),
             (ErrorReason::UnrelatedKeyIdInToken, "UnrelatedKeyIdInToken", None),
             (
-                ErrorReason::BadEnvironmentKeyIdInToken,
-                "BadEnvironmentKeyIdInToken",
+                ErrorReason::BadEnvironmentKeyInToken,
+                "BadEnvironmentKeyInToken",
                 None,
             ),
             (ErrorReason::BadPath, "BadPath", None),
@@ -285,5 +293,30 @@ mod tests {
 
             assert_eq!(expected_body, response_body);
         }
+    }
+
+    #[test]
+    fn test_unknown_reason_does_not_fail_parsing() {
+        // A reason string not known to this crate must deserialize to `Unknown`
+        // rather than failing the whole body parse (which would drop the error
+        // and leave `Response::error == None`).
+        let body: ErrorBody =
+            serde_json::from_str(r#"{"reason":"SomeFutureReasonAppleAdded"}"#).unwrap();
+        assert_eq!(
+            body,
+            ErrorBody {
+                reason: ErrorReason::Unknown,
+                timestamp: None,
+            }
+        );
+    }
+
+    #[test]
+    fn test_bad_environment_key_in_token_matches_apns_wire_name() {
+        // APNs returns the reason string "BadEnvironmentKeyInToken" (no "Id").
+        // Verified against the live APNs sandbox endpoint.
+        let body: ErrorBody =
+            serde_json::from_str(r#"{"reason":"BadEnvironmentKeyInToken"}"#).unwrap();
+        assert_eq!(body.reason, ErrorReason::BadEnvironmentKeyInToken);
     }
 }
